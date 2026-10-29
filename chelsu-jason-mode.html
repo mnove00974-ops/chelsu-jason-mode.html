@@ -55,4 +55,260 @@
 
     <main class="max-w-md mx-auto p-4">
 
-        <!-- WORK
+        <!-- WORKOUTS TAB -->
+        <section id="tab-workouts" class="space-y-4">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow">
+                <h2 class="text-sm font-semibold text-gray-300 mb-2 flex items-center justify-between">
+                    <span>Select Training Day</span>
+                    <span class="text-xs text-pink-400 font-normal">120 Min Session</span>
+                </h2>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="selectDay('Push A')" class="day-btn bg-pink-600 text-white py-2 rounded-lg text-xs font-bold transition" data-day="Push A">Push A</button>
+                    <button onclick="selectDay('Pull A')" class="day-btn bg-gray-800 text-gray-300 py-2 rounded-lg text-xs font-bold transition" data-day="Pull A">Pull A</button>
+                    <button onclick="selectDay('Legs A')" class="day-btn bg-gray-800 text-gray-300 py-2 rounded-lg text-xs font-bold transition" data-day="Legs A">Legs A</button>
+                    <button onclick="selectDay('Push B')" class="day-btn bg-gray-800 text-gray-300 py-2 rounded-lg text-xs font-bold transition" data-day="Push B">Push B</button>
+                    <button onclick="selectDay('Pull B')" class="day-btn bg-gray-800 text-gray-300 py-2 rounded-lg text-xs font-bold transition" data-day="Pull B">Pull B</button>
+                    <button onclick="selectDay('Legs B')" class="day-btn bg-gray-800 text-gray-300 py-2 rounded-lg text-xs font-bold transition" data-day="Legs B">Legs B</button>
+                </div>
+            </div>
+
+            <div id="workout-container" class="space-y-3">
+                <!-- Dynamic workout exercises injected here -->
+            </div>
+        </section>
+
+        <!-- TIMER & ARCHITECTURE TAB -->
+        <section id="tab-timer" class="space-y-4 hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-center shadow">
+                <h3 class="text-sm font-semibold text-gray-300 mb-1">Gym Set Rest Timer</h3>
+                <div id="rest-timer-display" class="text-4xl font-black text-pink-400 my-3">00:00</div>
+                <div class="flex justify-center gap-2 mb-4">
+                    <button onclick="startRest(60)" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded-lg">60s</button>
+                    <button onclick="startRest(90)" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded-lg">90s</button>
+                    <button onclick="startRest(120)" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded-lg">2 Mins</button>
+                    <button onclick="stopRest()" class="bg-red-900/50 text-red-300 text-xs px-3 py-1.5 rounded-lg">Stop</button>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow space-y-3">
+                <h3 class="text-sm font-semibold text-pink-400"><i class="fa-solid fa-clock-rotate-left mr-1"></i> 120-Min Session Architecture</h3>
+                <ul class="text-xs space-y-2 text-gray-300">
+                    <li class="flex justify-between border-b border-gray-800 pb-1.5"><span>Warm-Up & Mobility</span> <strong class="text-white">15 Mins</strong></li>
+                    <li class="flex justify-between border-b border-gray-800 pb-1.5"><span>Resistance Training</span> <strong class="text-white">70 Mins</strong></li>
+                    <li class="flex justify-between border-b border-gray-800 pb-1.5"><span>Incline LISS Cardio</span> <strong class="text-white">30 Mins</strong></li>
+                    <li class="flex justify-between"><span>Cool-Down & Stretch</span> <strong class="text-white">5 Mins</strong></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- NUTRITION & FASTING TAB -->
+        <section id="tab-nutrition" class="space-y-4 hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow space-y-3">
+                <h3 class="text-sm font-semibold text-pink-400"><i class="fa-solid fa-calculator mr-1"></i> TDEE & Macro Targets (5'2", 56kg)</h3>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-gray-800 p-2 rounded-lg">
+                        <div class="text-xs text-gray-400">Calories</div>
+                        <div class="text-sm font-bold text-white">1,600 kcal</div>
+                    </div>
+                    <div class="bg-gray-800 p-2 rounded-lg">
+                        <div class="text-xs text-gray-400">Protein</div>
+                        <div class="text-sm font-bold text-pink-400">115 g</div>
+                    </div>
+                    <div class="bg-gray-800 p-2 rounded-lg">
+                        <div class="text-xs text-gray-400">Water</div>
+                        <div class="text-sm font-bold text-blue-400">2.5 L</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow text-center space-y-3">
+                <h3 class="text-sm font-semibold text-gray-300">Intermittent Fasting Timer (16:8)</h3>
+                <div id="fasting-display" class="text-3xl font-black text-pink-400">00:00:00</div>
+                <p id="fasting-status" class="text-xs text-gray-400">Status: Fasting Window Active</p>
+                <button onclick="toggleFasting()" id="fasting-btn" class="w-full bg-pink-600 hover:bg-pink-700 text-white text-xs py-2 rounded-lg font-medium">Start / Reset Fast</button>
+            </div>
+        </section>
+
+        <!-- GUIDE TAB -->
+        <section id="tab-setup" class="space-y-4 hidden">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 shadow space-y-3 text-xs text-gray-300">
+                <h3 class="text-sm font-semibold text-pink-400"><i class="fa-solid fa-shield-heart mr-1"></i> Toning & Muscle Retention Rules</h3>
+                <p><strong>Goal:</strong> Build rounded shoulders, sculpted glutes, and a lean waist while maintaining curves.</p>
+                <p><strong>Double Progression:</strong> Stay in the target rep range until you hit the top number on all sets easily, then increase weight slightly.</p>
+                <p><strong>Rest Days:</strong> Sunday is full rest. Walk casually or stretch.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const workouts = {
+            "Push A": [
+                { name: "Seated Machine Chest Press", sets: "3", reps: "10-12", rir: "RIR 2", cues: "Align handles with mid-chest. Tuck elbows ~45°." },
+                { name: "Incline Dumbbell Press (30°)", sets: "3", reps: "10-12", rir: "RIR 2", cues: "Press upward converging over upper chest." },
+                { name: "Cable Lateral Raises (Shoulders)", sets: "4", reps: "12-15", rir: "RIR 1", cues: "Crucial for capped shoulder look. Pull in scapular plane." },
+                { name: "Overhead Dumbbell Triceps Extension", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Keep elbows pointed forward framing your face." }
+            ],
+            "Pull A": [
+                { name: "Neutral Grip Lat Pulldown", sets: "3", reps: "10-12", rir: "RIR 2", cues: "Pull down to upper chest, flaring upper back." },
+                { name: "Chest-Supported Row Machine", sets: "3", reps: "10-12", rir: "RIR 2", cues: "Drive elbows back toward hips. Keep chest glued to pad." },
+                { name: "Cable Face Pulls", sets: "3", reps: "15-20", rir: "RIR 1", cues: "Pull to forehead, rotating hands back for posture." },
+                { name: "Dumbbell Biceps Hammer Curls", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Palms facing each other for balanced arm toning." }
+            ],
+            "Legs A": [
+                { name: "Leg Press (Glute / Quad Focus)", sets: "4", reps: "10-12", rir: "RIR 2", cues: "Place feet higher on plate for glute/hamstring emphasis." },
+                { name: "Bulgarian Split Squats (Dumbbell)", sets: "3", reps: "8-10 / leg", rir: "RIR 2", cues: "Slight forward torso lean to target glutes." },
+                { name: "Seated Lying Leg Curls", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Keep hips pressed firmly into seat pad." },
+                { name: "Standing Calf Raises", sets: "3", reps: "15-20", rir: "RIR 1", cues: "Full stretch at bottom, 1s pause at top." }
+            ],
+            "Push B": [
+                { name: "Dumbbell Shoulder Press (Seated)", sets: "3", reps: "10-12", rir: "RIR 2", cues: "Press overhead without arching lower back." },
+                { name: "Chest Flyes (Cable or Machine)", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Soft bend in elbows, hug tree motion." },
+                { name: "Dumbbell Lateral Raises (Incline Bench)", sets: "4", reps: "12-15", rir: "RIR 1", cues: "Chest against incline bench to prevent swinging." },
+                { name: "Cable Triceps Pushdowns", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Lock elbows at ribs, press straight down." }
+            ],
+            "Pull B": [
+                { name: "Seated Cable Row (Wide Grip)", sets: "3", reps: "10-12", rir: "RIR 2", cues: "Pull to belly button, squeeze shoulder blades." },
+                { name: "Straight-Arm Cable Pulldowns", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Engage lats, sweep bar down to thighs." },
+                { name: "Reverse Pec Deck (Rear Delts)", sets: "3", reps: "15-20", rir: "RIR 1", cues: "Keep arms parallel to floor for back definition." },
+                { name: "Dumbbell Incline Biceps Curls", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Full stretch at bottom on 45° incline." }
+            ],
+            "Legs B": [
+                { name: "Roman Chair Back / Glute Extension", sets: "3", reps: "12-15", rir: "RIR 2", cues: "Round upper back slightly, squeeze glutes at top." },
+                { name: "Goblet Squats (Dumbbell / Kettlebell)", sets: "3", reps: "10-12", rir: "RIR 2", cues: "Keep chest proud, sit back into hips." },
+                { name: "Leg Extensions (Quads)", sets: "3", reps: "12-15", rir: "RIR 1", cues: "Squeeze quads hard for 1 second at full lockout." },
+                { name: "Cable Pallof Press (Core Toning)", sets: "3", reps: "12 / side", rir: "Controlled", cues: "Anti-rotation core hold for a tight waistline." }
+            ]
+        };
+
+        let currentDay = "Push A";
+
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-pink-400', 'bg-gray-800');
+                btn.classList.add('hover:text-white');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('nav-' + tabId);
+            activeBtn.classList.add('text-pink-400', 'bg-gray-800');
+            activeBtn.classList.remove('hover:text-white');
+        }
+
+        function selectDay(day) {
+            currentDay = day;
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                if(btn.dataset.day === day) {
+                    btn.className = "day-btn bg-pink-600 text-white py-2 rounded-lg text-xs font-bold transition";
+                } else {
+                    btn.className = "day-btn bg-gray-800 text-gray-300 py-2 rounded-lg text-xs font-bold transition";
+                }
+            });
+            renderWorkout();
+        }
+
+        function renderWorkout() {
+            const container = document.getElementById('workout-container');
+            const list = workouts[currentDay];
+            let html = `<div class="bg-gray-900 border border-gray-800 rounded-xl p-3 mb-3"><h3 class="text-sm font-bold text-pink-400">${currentDay} Routine</h3></div>`;
+            
+            list.forEach((ex, idx) => {
+                const savedWeight = localStorage.getItem(`${currentDay}_ex_${idx}_w`) || '';
+                const savedReps = localStorage.getItem(`${currentDay}_ex_${idx}_r`) || '';
+                
+                html += `
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl p-3 space-y-2 shadow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-xs text-pink-400 font-bold">#${idx+1}</span>
+                                <h4 class="text-sm font-semibold text-white">${ex.name}</h4>
+                            </div>
+                            <span class="text-[10px] bg-gray-800 text-gray-300 px-2 py-0.5 rounded font-mono">${ex.sets} Sets × ${ex.reps} | ${ex.rir}</span>
+                        </div>
+                        <p class="text-[11px] text-gray-400 italic bg-gray-950 p-1.5 rounded border border-gray-800/50"><i class="fa-solid fa-lightbulb text-yellow-500 mr-1"></i> ${ex.cues}</p>
+                        <div class="flex gap-2 pt-1">
+                            <input type="text" placeholder="Weight (kg)" value="${savedWeight}" onchange="saveData('${currentDay}', ${idx}, 'w', this.value)" class="w-1/2 bg-gray-950 border border-gray-800 rounded px-2 py-1 text-xs text-center text-white focus:outline-none focus:border-pink-500">
+                            <input type="text" placeholder="Reps Done" value="${savedReps}" onchange="saveData('${currentDay}', ${idx}, 'r', this.value)" class="w-1/2 bg-gray-950 border border-gray-800 rounded px-2 py-1 text-xs text-center text-white focus:outline-none focus:border-pink-500">
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function saveData(day, idx, type, val) {
+            localStorage.setItem(`${day}_ex_${idx}_${type}`, val);
+        }
+
+        let timerInterval = null;
+        function startRest(seconds) {
+            clearInterval(timerInterval);
+            let remaining = seconds;
+            const display = document.getElementById('rest-timer-display');
+            timerInterval = setInterval(() => {
+                let m = Math.floor(remaining / 60);
+                let s = remaining % 60;
+                display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                if(remaining <= 0) {
+                    clearInterval(timerInterval);
+                    display.innerText = "TIME!";
+                }
+                remaining--;
+            }, 1000);
+        }
+
+        function stopRest() {
+            clearInterval(timerInterval);
+            document.getElementById('rest-timer-display').innerText = "00:00";
+        }
+
+        let fastStartTime = localStorage.getItem('fast_start') || null;
+        function toggleFasting() {
+            if(!fastStartTime) {
+                fastStartTime = Date.now();
+                localStorage.setItem('fast_start', fastStartTime);
+            } else {
+                fastStartTime = null;
+                localStorage.removeItem('fast_start');
+            }
+            updateFasting();
+        }
+
+        function updateFasting() {
+            const display = document.getElementById('fasting-display');
+            const status = document.getElementById('fasting-status');
+            if(!fastStartTime) {
+                display.innerText = "00:00:00";
+                status.innerText = "Status: Fasting Inactive";
+                return;
+            }
+            const elapsed = Math.floor((Date.now() - fastStartTime) / 1000);
+            let h = Math.floor(elapsed / 3600);
+            let m = Math.floor((elapsed % 3600) / 60);
+            let s = elapsed % 60;
+            display.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            status.innerText = h >= 16 ? "Status: Goal Reached (16h+)" : "Status: Fasting Window Active";
+        }
+        setInterval(updateFasting, 1000);
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').classList.remove('hidden');
+        });
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('installBtn').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        renderWorkout();
+    </script>
+</body>
+</html>
