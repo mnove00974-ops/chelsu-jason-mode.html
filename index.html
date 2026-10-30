@@ -29,8 +29,8 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="openUserModal()" class="bg-neutral-900 border border-custom hover:bg-neutral-800 text-xs px-2.5 py-1 rounded text-gray-300 font-medium transition">
-                <i class="fa-solid fa-user-gear mr-1"></i> Profile
+            <button onclick="openUserModal()" class="bg-neutral-900 border border-custom hover:bg-neutral-800 text-xs px-2.5 py-1 rounded text-gray-300 font-medium transition flex items-center gap-1.5">
+                <i class="fa-solid fa-user-gear"></i> Profile
             </button>
             <button id="installBtn" class="hidden bg-white text-black text-xs px-2.5 py-1 rounded-full font-bold transition">
                 Install
@@ -116,7 +116,9 @@
             <div class="bg-card border border-custom rounded-xl p-4 space-y-4">
                 <div class="flex justify-between items-center">
                     <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-calculator mr-1"></i> Macro & Calorie Targets</h3>
-                    <span id="user-stats-summary" class="text-[10px] text-gray-500 font-mono">5'2" | 56kg</span>
+                    <button onclick="openUserModal()" class="text-[10px] text-gray-400 hover:text-white font-mono underline flex items-center gap-1">
+                        <span id="user-stats-summary">5'2" | 56kg</span> <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
                 </div>
 
                 <!-- Calorie Target Progress -->
@@ -232,30 +234,67 @@
 
     </main>
 
-    <!-- PROFILE MANAGEMENT MODAL -->
+    <!-- USER PROFILE & STATS EDIT MODAL -->
     <div id="userModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-card border border-custom rounded-xl p-5 w-full max-w-sm space-y-4">
+        <div class="bg-card border border-custom rounded-xl p-5 w-full max-w-sm space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-custom pb-3">
-                <h3 class="text-sm font-bold text-white uppercase tracking-wider">User Profiles</h3>
+                <h3 class="text-sm font-bold text-white uppercase tracking-wider">User Profiles & Stats</h3>
                 <button onclick="closeUserModal()" class="text-gray-400 hover:text-white text-sm"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
+            <!-- Profile Switcher -->
             <div class="space-y-2">
                 <label class="text-xs text-gray-400 block">Switch Active Profile</label>
                 <select id="profile-select" onchange="switchProfile(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none">
                 </select>
             </div>
 
-            <div class="space-y-2 pt-2 border-t border-custom">
+            <!-- User Stats Editor (Height, Weight, Age, Gender) -->
+            <div class="space-y-3 pt-3 border-t border-custom">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-300 uppercase tracking-wider">Edit Profile Stats</span>
+                    <span class="text-[10px] text-gray-500 font-mono">Auto-calculates Macros</span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[11px] text-gray-400 block mb-1">Height (cm)</label>
+                        <input type="number" id="stat-height" placeholder="157" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-gray-400 block mb-1">Weight (kg)</label>
+                        <input type="number" id="stat-weight" placeholder="56" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[11px] text-gray-400 block mb-1">Age</label>
+                        <input type="number" id="stat-age" placeholder="22" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-gray-400 block mb-1">Gender</label>
+                        <select id="stat-gender" class="w-full bg-neutral-950 border border-custom rounded px-2 py-1.5 text-xs text-white focus:outline-none">
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="saveUserStats()" class="w-full py-2 bg-white text-black font-bold text-xs rounded-lg hover:bg-gray-200 transition">Update & Recalculate Macros</button>
+            </div>
+
+            <!-- Create New Profile -->
+            <div class="space-y-2 pt-3 border-t border-custom">
                 <label class="text-xs text-gray-400 block">Create New User Profile</label>
                 <div class="flex gap-2">
-                    <input type="text" id="new-user-name" placeholder="User Name" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
+                    <input type="text" id="new-user-name" placeholder="Name (e.g., Sarah)" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
                     <button onclick="createNewProfile()" class="bg-white text-black font-bold text-xs px-3 rounded hover:bg-gray-200 transition">Add</button>
                 </div>
             </div>
 
             <!-- Import / Export Data -->
-            <div class="space-y-2 pt-2 border-t border-custom">
+            <div class="space-y-2 pt-3 border-t border-custom">
                 <label class="text-xs text-gray-400 block">Data Backup & Sync</label>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="exportProfileData()" class="py-1.5 bg-neutral-900 border border-custom text-xs text-gray-300 rounded hover:bg-neutral-800 transition"><i class="fa-solid fa-download mr-1"></i> Export JSON</button>
@@ -365,6 +404,7 @@
         function initApp() {
             document.getElementById('current-user-display').innerText = `User: ${activeProfile}`;
             renderProfileDropdown();
+            loadUserStatsForm();
             renderWorkout();
             updateNutritionUI();
             updateWaterUI();
@@ -376,7 +416,35 @@
             select.innerHTML = profiles.map(p => `<option value="${p}" ${p === activeProfile ? 'selected' : ''}>${p}</option>`).join('');
         }
 
-        function openUserModal() { document.getElementById('userModal').classList.remove('hidden'); }
+        function loadUserStatsForm() {
+            const stats = getProfileData('user_stats', { height: 157, weight: 56, age: 22, gender: 'female' });
+            document.getElementById('stat-height').value = stats.height;
+            document.getElementById('stat-weight').value = stats.weight;
+            document.getElementById('stat-age').value = stats.age;
+            document.getElementById('stat-gender').value = stats.gender;
+
+            // Height display conversion (cm to feet/inches)
+            const feet = Math.floor((stats.height / 2.54) / 12);
+            const inches = Math.round((stats.height / 2.54) % 12);
+            document.getElementById('user-stats-summary').innerText = `${feet}'${inches}" (${stats.height}cm) | ${stats.weight}kg`;
+        }
+
+        function saveUserStats() {
+            const height = parseInt(document.getElementById('stat-height').value) || 157;
+            const weight = parseInt(document.getElementById('stat-weight').value) || 56;
+            const age = parseInt(document.getElementById('stat-age').value) || 22;
+            const gender = document.getElementById('stat-gender').value;
+
+            setProfileData('user_stats', { height, weight, age, gender });
+            loadUserStatsForm();
+            updateNutritionUI();
+            closeUserModal();
+        }
+
+        function openUserModal() { 
+            loadUserStatsForm();
+            document.getElementById('userModal').classList.remove('hidden'); 
+        }
         function closeUserModal() { document.getElementById('userModal').classList.add('hidden'); }
 
         function createNewProfile() {
@@ -396,7 +464,6 @@
         function switchProfile(name) {
             activeProfile = name;
             localStorage.setItem('jm_active_profile', activeProfile);
-            closeUserModal();
             initApp();
         }
 
@@ -579,10 +646,29 @@
             updateWaterUI();
         }
 
+        // Dynamic TDEE / Macro Calculator based on User Stats
+        function calculateTargets() {
+            const stats = getProfileData('user_stats', { height: 157, weight: 56, age: 22, gender: 'female' });
+            
+            // Mifflin-St Jeor BMR
+            let bmr = (10 * stats.weight) + (6.25 * stats.height) - (5 * stats.age);
+            bmr += (stats.gender === 'female') ? -161 : 5;
+
+            // Activity Multiplier for 6-day split (1.45)
+            const tdee = Math.round(bmr * 1.45);
+            
+            // Macro split: 2.0g/kg Protein, 0.9g/kg Fat, Remainder Carbs
+            const proGrams = Math.round(stats.weight * 2.0);
+            const fatGrams = Math.round(stats.weight * 0.9);
+            const carbGrams = Math.max(50, Math.round((tdee - (proGrams * 4 + fatGrams * 9)) / 4));
+
+            return { cal: tdee, pro: proGrams, carb: carbGrams, fat: fatGrams };
+        }
+
         // Nutrition UI
         function updateNutritionUI() {
             const consumed = getProfileData('nutrition', { cal: 0, pro: 0, carb: 0, fat: 0 });
-            const targets = { cal: 1600, pro: 115, carb: 160, fat: 50 };
+            const targets = calculateTargets();
 
             document.getElementById('cal-progress-text').innerText = `${consumed.cal} / ${targets.cal} kcal`;
             document.getElementById('cal-progress-bar').style.width = `${Math.min(100, Math.round((consumed.cal / targets.cal)*100))}%`;
@@ -631,7 +717,6 @@
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", `JasonMode_${activeProfile}_Backup.json`);
-            document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
