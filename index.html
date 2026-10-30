@@ -15,15 +15,6 @@
         .border-custom { border-color: #2a2a2a; }
         .bg-card { background-color: #0a0a0a; }
         .bg-card-hover:hover { background-color: #121212; }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #ffffff;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen pb-24 text-gray-100 selection:bg-white selection:text-black">
@@ -59,7 +50,7 @@
             <i class="fa-solid fa-stopwatch text-sm mb-1"></i> Rest Timer
         </button>
         <button onclick="switchTab('guide')" id="nav-guide" class="tab-btn flex flex-col items-center py-1.5 px-3 rounded-lg hover:text-white transition">
-            <i class="fa-solid fa-sliders text-sm mb-1"></i> Customizer
+            <i class="fa-solid fa-sliders text-sm mb-1"></i> Settings
         </button>
     </nav>
 
@@ -106,9 +97,25 @@
 
         <!-- MACROS & NUTRITION TAB -->
         <section id="tab-nutrition" class="space-y-4 hidden">
+            <!-- Hydration Tracker Widget -->
+            <div class="bg-card border border-custom rounded-xl p-4 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-glass-water text-blue-400 mr-1"></i> Daily Hydration Tracker</h3>
+                    <span id="water-progress-text" class="font-mono text-xs text-white">0 / 2,500 ml</span>
+                </div>
+                <div class="w-full bg-neutral-900 rounded-full h-2 overflow-hidden border border-custom">
+                    <div id="water-progress-bar" class="bg-blue-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="addWater(250)" class="w-1/2 py-1.5 bg-neutral-900 border border-custom hover:bg-neutral-800 text-xs text-gray-300 font-mono rounded-lg transition">+250 ml</button>
+                    <button onclick="addWater(500)" class="w-1/2 py-1.5 bg-neutral-900 border border-custom hover:bg-neutral-800 text-xs text-gray-300 font-mono rounded-lg transition">+500 ml</button>
+                    <button onclick="resetWater()" class="px-3 py-1.5 bg-neutral-950 border border-custom hover:bg-neutral-900 text-xs text-red-400 rounded-lg transition"><i class="fa-solid fa-rotate-left"></i></button>
+                </div>
+            </div>
+
             <div class="bg-card border border-custom rounded-xl p-4 space-y-4">
                 <div class="flex justify-between items-center">
-                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-calculator mr-1"></i> Daily Macro & Calorie Targets</h3>
+                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-calculator mr-1"></i> Macro & Calorie Targets</h3>
                     <span id="user-stats-summary" class="text-[10px] text-gray-500 font-mono">5'2" | 56kg</span>
                 </div>
 
@@ -197,24 +204,28 @@
             </div>
         </section>
 
-        <!-- ROUTINE CUSTOMIZER TAB -->
+        <!-- ROUTINE & APP SETTINGS TAB -->
         <section id="tab-guide" class="space-y-4 hidden">
             <div class="bg-card border border-custom rounded-xl p-4 space-y-3">
-                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-sliders mr-1"></i> Routine & Difficulty Customizer</h3>
-                <p class="text-xs text-gray-400">Select your fitness experience level to automatically adjust machine selection, rep volumes, and safety cues.</p>
-
-                <div class="space-y-2 pt-2">
+                <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-sliders mr-1"></i> Settings & Preferences</h3>
+                
+                <div class="space-y-2 pt-1">
                     <label class="text-xs text-gray-400 block">Experience / Difficulty Level</label>
                     <select id="difficulty-select" onchange="changeDifficulty(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none focus:border-white">
                         <option value="beginner">Beginner (Guided Machines & Joint Safety Focus)</option>
                         <option value="intermediate">Intermediate (Compound Weights & Free Dumbbells)</option>
-                        <option value="advanced">Advanced (High Volume & Intensive Intensity)</option>
+                        <option value="advanced">Advanced (High Volume & Intensity)</option>
                     </select>
                 </div>
 
-                <div class="pt-3 border-t border-custom space-y-2 text-xs text-gray-400">
-                    <p><strong>Beginner Mode:</strong> Swaps out high-risk free weights for safe machine cables and goblet squats, preventing injury while building double progression habits.</p>
-                    <p><strong>Custom Edit:</strong> Tap the <strong>Edit</strong> icon on any exercise card on the Workouts tab to change names, sets, or rep targets to fit your specific gym.</p>
+                <div class="space-y-2 pt-2 border-t border-custom">
+                    <label class="text-xs text-gray-400 block">Auto-Start Rest Timer on Set Save</label>
+                    <select id="autotimer-select" onchange="changeAutoTimer(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none focus:border-white">
+                        <option value="60">Auto-Start 60 Seconds</option>
+                        <option value="90">Auto-Start 90 Seconds</option>
+                        <option value="120">Auto-Start 120 Seconds</option>
+                        <option value="off">Off (Manual Timer Only)</option>
+                    </select>
                 </div>
             </div>
         </section>
@@ -232,7 +243,6 @@
             <div class="space-y-2">
                 <label class="text-xs text-gray-400 block">Switch Active Profile</label>
                 <select id="profile-select" onchange="switchProfile(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none">
-                    <!-- Dynamic Profiles Injected -->
                 </select>
             </div>
 
@@ -244,8 +254,18 @@
                 </div>
             </div>
 
+            <!-- Import / Export Data -->
+            <div class="space-y-2 pt-2 border-t border-custom">
+                <label class="text-xs text-gray-400 block">Data Backup & Sync</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="exportProfileData()" class="py-1.5 bg-neutral-900 border border-custom text-xs text-gray-300 rounded hover:bg-neutral-800 transition"><i class="fa-solid fa-download mr-1"></i> Export JSON</button>
+                    <button onclick="triggerImport()" class="py-1.5 bg-neutral-900 border border-custom text-xs text-gray-300 rounded hover:bg-neutral-800 transition"><i class="fa-solid fa-upload mr-1"></i> Import JSON</button>
+                    <input type="file" id="import-file-input" class="hidden" onchange="importProfileData(event)">
+                </div>
+            </div>
+
             <div class="pt-3 border-t border-custom flex justify-between items-center">
-                <button onclick="resetCurrentUserData()" class="text-xs text-red-400 hover:underline"><i class="fa-solid fa-rotate-left mr-1"></i> Reset Active Profile Data</button>
+                <button onclick="resetCurrentUserData()" class="text-xs text-red-400 hover:underline"><i class="fa-solid fa-rotate-left mr-1"></i> Reset Active Profile</button>
             </div>
         </div>
     </div>
@@ -287,7 +307,6 @@
     </div>
 
     <script>
-        // Preset Workout Workouts database
         const presetWorkouts = {
             beginner: {
                 "Push A": [
@@ -326,48 +345,9 @@
                     { name: "Seated Leg Curls", sets: "3", reps: "12-15", cues: "Focus on hamstring contraction." },
                     { name: "Cable Pallof Press", sets: "3", reps: "12 / side", cues: "Hold center for core stability." }
                 ]
-            },
-            intermediate: {
-                "Push A": [
-                    { name: "Barbell Bench Press", sets: "4", reps: "8-10", cues: "Retract scapula, arch lower back slightly." },
-                    { name: "Incline Dumbbell Press", sets: "3", reps: "10-12", cues: "Converge weights slightly over chest." },
-                    { name: "Standing Dumbbell Lateral Raises", sets: "4", reps: "12-15", cues: "Lead with elbows." },
-                    { name: "Skullcrushers (EZ Bar)", sets: "3", reps: "10-12", cues: "Lower bar to forehead smoothly." }
-                ],
-                "Pull A": [
-                    { name: "Barbell Bent-Over Rows", sets: "4", reps: "8-10", cues: "Hinge at hips, pull to belly button." },
-                    { name: "Pull-Ups / Assisted Pulldowns", sets: "3", reps: "8-10", cues: "Full stretch at top position." },
-                    { name: "Face Pulls", sets: "3", reps: "15", cues: "External rotation at movement finish." },
-                    { name: "Barbell Biceps Curls", sets: "3", reps: "10-12", cues: "Avoid torso swinging." }
-                ],
-                "Legs A": [
-                    { name: "Barbell Back Squats", sets: "4", reps: "8-10", cues: "Keep chest up, knees tracking toes." },
-                    { name: "Romanian Deadlifts (RDLs)", sets: "3", reps: "10-12", cues: "Push hips back to stretch hamstrings." },
-                    { name: "Bulgarian Split Squats", sets: "3", reps: "8-10 / leg", cues: "Keep front heel firmly planted." },
-                    { name: "Seated Calf Raises", sets: "4", reps: "15", cues: "Full stretch at bottom range." }
-                ],
-                "Push B": [
-                    { name: "Overhead Barbell Press (OHP)", sets: "4", reps: "8-10", cues: "Tight glutes and core." },
-                    { name: "Dips / Machine Dips", sets: "3", reps: "10-12", cues: "Lean slightly forward for chest focus." },
-                    { name: "Cable Lateral Raises", sets: "4", reps: "12-15", cues: "Continuous cable tension." },
-                    { name: "Triceps Overhead Extension", sets: "3", reps: "10-12", cues: "Deep triceps stretch." }
-                ],
-                "Pull B": [
-                    { name: "Single-Arm Dumbbell Rows", sets: "4", reps: "10-12", cues: "Pull dumbbell toward hip crease." },
-                    { name: "Lat Pulldowns (Wide Grip)", sets: "3", reps: "10-12", cues: "Squeeze lats downward." },
-                    { name: "Rear Delt Dumbbell Flyes", sets: "3", reps: "15", cues: "Pinkies pointing outward." },
-                    { name: "Incline Dumbbell Curls", sets: "3", reps: "10-12", cues: "Strict form arm curl." }
-                ],
-                "Legs B": [
-                    { name: "Barbell Hip Thrusts", sets: "4", reps: "10-12", cues: "Pause 1s at top glute lockout." },
-                    { name: "Leg Press", sets: "3", reps: "10-12", cues: "Deep knee bend without lower back rounding." },
-                    { name: "Lying Leg Curls", sets: "3", reps: "12-15", cues: "Focus on hamstring contraction." },
-                    { name: "Standing Calf Raises", sets: "4", reps: "15", cues: "Explosive upward drive." }
-                ]
             }
         };
 
-        // App State Management
         let profiles = JSON.parse(localStorage.getItem('jm_profiles')) || ['Default Profile'];
         let activeProfile = localStorage.getItem('jm_active_profile') || 'Default Profile';
         let currentDay = "Push A";
@@ -387,6 +367,8 @@
             renderProfileDropdown();
             renderWorkout();
             updateNutritionUI();
+            updateWaterUI();
+            document.getElementById('autotimer-select').value = getProfileData('autotimer', '60');
         }
 
         function renderProfileDropdown() {
@@ -459,6 +441,10 @@
             renderWorkout();
         }
 
+        function changeAutoTimer(val) {
+            setProfileData('autotimer', val);
+        }
+
         function getActiveWorkoutList() {
             const diff = getProfileData('difficulty', 'beginner');
             document.getElementById('difficulty-badge').innerText = diff;
@@ -477,7 +463,12 @@
             list.forEach((ex, idx) => {
                 const savedWeight = getProfileData(`${currentDay}_ex_${idx}_w`, '');
                 const savedReps = getProfileData(`${currentDay}_ex_${idx}_r`, '');
+                const prevWeight = getProfileData(`${currentDay}_ex_${idx}_prev_w`, '');
+                const prevReps = getProfileData(`${currentDay}_ex_${idx}_prev_r`, '');
+
                 if(savedWeight !== '' || savedReps !== '') completedCount++;
+
+                const prevDisplay = (prevWeight || prevReps) ? `Last: ${prevWeight || '0'}kg × ${prevReps || '0'} reps` : 'No previous log';
 
                 html += `
                     <div class="bg-card border border-custom rounded-xl p-3.5 space-y-2.5">
@@ -491,7 +482,10 @@
                                 <button onclick="openEditExerciseModal(${idx})" class="text-gray-500 hover:text-white text-xs p-1"><i class="fa-solid fa-pen-to-square"></i></button>
                             </div>
                         </div>
-                        <p class="text-[11px] text-gray-400 italic bg-black p-2 rounded border border-custom"><i class="fa-solid fa-circle-info text-gray-300 mr-1"></i> ${ex.cues}</p>
+                        <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono bg-black p-1.5 rounded border border-custom">
+                            <span><i class="fa-solid fa-clock-rotate-left mr-1"></i> ${prevDisplay}</span>
+                            <span class="text-gray-500 italic">${ex.cues}</span>
+                        </div>
                         <div class="flex gap-2 pt-1">
                             <input type="text" placeholder="Weight (kg)" value="${savedWeight}" onchange="saveExerciseData(${idx}, 'w', this.value)" class="w-1/2 bg-black border border-custom rounded px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-white font-mono">
                             <input type="text" placeholder="Reps Done" value="${savedReps}" onchange="saveExerciseData(${idx}, 'r', this.value)" class="w-1/2 bg-black border border-custom rounded px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-white font-mono">
@@ -502,7 +496,6 @@
 
             container.innerHTML = html;
 
-            // Update Workout Progress Bar
             const total = list.length;
             const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
             document.getElementById('workout-progress-text').innerText = `${completedCount} / ${total} Logged (${pct}%)`;
@@ -510,11 +503,20 @@
         }
 
         function saveExerciseData(idx, type, val) {
+            const currentVal = getProfileData(`${currentDay}_ex_${idx}_${type}`, '');
+            if(currentVal !== '' && currentVal !== val) {
+                setProfileData(`${currentDay}_ex_${idx}_prev_${type}`, currentVal);
+            }
+
             setProfileData(`${currentDay}_ex_${idx}_${type}`, val);
             renderWorkout();
+
+            const autoTimerSetting = getProfileData('autotimer', '60');
+            if(autoTimerSetting !== 'off' && val !== '') {
+                startRest(parseInt(autoTimerSetting));
+            }
         }
 
-        // Modal Exercise Edit
         function openEditExerciseModal(idx) {
             editModalIndex = idx;
             const list = getActiveWorkoutList();
@@ -557,6 +559,26 @@
             renderWorkout();
         }
 
+        // Hydration Logic
+        function updateWaterUI() {
+            const ml = getProfileData('water', 0);
+            const target = 2500;
+            const pct = Math.min(100, Math.round((ml / target) * 100));
+            document.getElementById('water-progress-text').innerText = `${ml} / ${target} ml`;
+            document.getElementById('water-progress-bar').style.width = `${pct}%`;
+        }
+
+        function addWater(amount) {
+            const current = getProfileData('water', 0);
+            setProfileData('water', current + amount);
+            updateWaterUI();
+        }
+
+        function resetWater() {
+            setProfileData('water', 0);
+            updateWaterUI();
+        }
+
         // Nutrition UI
         function updateNutritionUI() {
             const consumed = getProfileData('nutrition', { cal: 0, pro: 0, carb: 0, fat: 0 });
@@ -595,6 +617,42 @@
             document.getElementById('input-fat').value = '';
 
             updateNutritionUI();
+        }
+
+        // Export/Import JSON Data
+        function exportProfileData() {
+            let exportObj = {};
+            Object.keys(localStorage).forEach(key => {
+                if(key.startsWith(`jm_${activeProfile}_`)) {
+                    exportObj[key] = localStorage.getItem(key);
+                }
+            });
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `JasonMode_${activeProfile}_Backup.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImport() { document.getElementById('import-file-input').click(); }
+
+        function importProfileData(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                try {
+                    const importedObj = JSON.parse(e.target.result);
+                    Object.keys(importedObj).forEach(key => {
+                        localStorage.setItem(key, importedObj[key]);
+                    });
+                    alert('Profile data imported successfully!');
+                    initApp();
+                } catch(err) {
+                    alert('Invalid backup file format.');
+                }
+            };
+            fileReader.readAsText(event.target.files[0]);
         }
 
         // Rest Timer
@@ -638,7 +696,6 @@
             }
         });
 
-        // Initialize App
         initApp();
     </script>
 </body>
