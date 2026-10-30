@@ -117,7 +117,7 @@
                 <div class="flex justify-between items-center">
                     <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-calculator mr-1"></i> Macro & Calorie Targets</h3>
                     <button onclick="openUserModal()" class="text-[10px] text-gray-400 hover:text-white font-mono underline flex items-center gap-1">
-                        <span id="user-stats-summary">5'2" | 56kg</span> <i class="fa-solid fa-pen-to-square"></i>
+                        <span id="user-stats-summary">5'2" | 56kg ➔ Goal: 54kg</span> <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                 </div>
 
@@ -249,7 +249,7 @@
                 </select>
             </div>
 
-            <!-- User Stats Editor (Height, Weight, Age, Gender) -->
+            <!-- User Stats Editor (Height, Current Weight, Goal Weight, Age, Gender) -->
             <div class="space-y-3 pt-3 border-t border-custom">
                 <div class="flex justify-between items-center">
                     <span class="text-xs font-bold text-gray-300 uppercase tracking-wider">Edit Profile Stats</span>
@@ -262,19 +262,23 @@
                         <input type="number" id="stat-height" placeholder="157" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
                     </div>
                     <div>
-                        <label class="text-[11px] text-gray-400 block mb-1">Weight (kg)</label>
+                        <label class="text-[11px] text-gray-400 block mb-1">Current Weight (kg)</label>
                         <input type="number" id="stat-weight" placeholder="56" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="text-[11px] text-gray-400 block mb-1">Goal Wt (kg)</label>
+                        <input type="number" id="stat-goalweight" placeholder="54" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
+                    </div>
                     <div>
                         <label class="text-[11px] text-gray-400 block mb-1">Age</label>
                         <input type="number" id="stat-age" placeholder="22" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-white">
                     </div>
                     <div>
                         <label class="text-[11px] text-gray-400 block mb-1">Gender</label>
-                        <select id="stat-gender" class="w-full bg-neutral-950 border border-custom rounded px-2 py-1.5 text-xs text-white focus:outline-none">
+                        <select id="stat-gender" class="w-full bg-neutral-950 border border-custom rounded px-1.5 py-1.5 text-xs text-white focus:outline-none">
                             <option value="female">Female</option>
                             <option value="male">Male</option>
                         </select>
@@ -417,25 +421,28 @@
         }
 
         function loadUserStatsForm() {
-            const stats = getProfileData('user_stats', { height: 157, weight: 56, age: 22, gender: 'female' });
+            const stats = getProfileData('user_stats', { height: 157, weight: 56, goalweight: 54, age: 22, gender: 'female' });
             document.getElementById('stat-height').value = stats.height;
             document.getElementById('stat-weight').value = stats.weight;
+            document.getElementById('stat-goalweight').value = stats.goalweight || stats.weight;
             document.getElementById('stat-age').value = stats.age;
             document.getElementById('stat-gender').value = stats.gender;
 
-            // Height display conversion (cm to feet/inches)
+            // Height conversion display
             const feet = Math.floor((stats.height / 2.54) / 12);
             const inches = Math.round((stats.height / 2.54) % 12);
-            document.getElementById('user-stats-summary').innerText = `${feet}'${inches}" (${stats.height}cm) | ${stats.weight}kg`;
+            const goalText = stats.goalweight ? ` ➔ Goal: ${stats.goalweight}kg` : '';
+            document.getElementById('user-stats-summary').innerText = `${feet}'${inches}" | ${stats.weight}kg${goalText}`;
         }
 
         function saveUserStats() {
             const height = parseInt(document.getElementById('stat-height').value) || 157;
             const weight = parseInt(document.getElementById('stat-weight').value) || 56;
+            const goalweight = parseInt(document.getElementById('stat-goalweight').value) || weight;
             const age = parseInt(document.getElementById('stat-age').value) || 22;
             const gender = document.getElementById('stat-gender').value;
 
-            setProfileData('user_stats', { height, weight, age, gender });
+            setProfileData('user_stats', { height, weight, goalweight, age, gender });
             loadUserStatsForm();
             updateNutritionUI();
             closeUserModal();
@@ -646,20 +653,28 @@
             updateWaterUI();
         }
 
-        // Dynamic TDEE / Macro Calculator based on User Stats
+        // Dynamic TDEE / Macro Calculator based on User Stats & Goal Weight
         function calculateTargets() {
-            const stats = getProfileData('user_stats', { height: 157, weight: 56, age: 22, gender: 'female' });
+            const stats = getProfileData('user_stats', { height: 157, weight: 56, goalweight: 54, age: 22, gender: 'female' });
             
             // Mifflin-St Jeor BMR
             let bmr = (10 * stats.weight) + (6.25 * stats.height) - (5 * stats.age);
             bmr += (stats.gender === 'female') ? -161 : 5;
 
             // Activity Multiplier for 6-day split (1.45)
-            const tdee = Math.round(bmr * 1.45);
+            let tdee = Math.round(bmr * 1.45);
             
-            // Macro split: 2.0g/kg Protein, 0.9g/kg Fat, Remainder Carbs
-            const proGrams = Math.round(stats.weight * 2.0);
-            const fatGrams = Math.round(stats.weight * 0.9);
+            // Calorie adjustments based on Goal Weight vs Current Weight
+            if(stats.goalweight < stats.weight) {
+                tdee -= 250; // Mild calorie deficit for weight loss
+            } else if(stats.goalweight > stats.weight) {
+                tdee += 250; // Mild calorie surplus for weight gain/muscle building
+            }
+
+            // Macro split using target/goal weight
+            const targetWeight = stats.goalweight || stats.weight;
+            const proGrams = Math.round(targetWeight * 2.0);
+            const fatGrams = Math.round(targetWeight * 0.9);
             const carbGrams = Math.max(50, Math.round((tdee - (proGrams * 4 + fatGrams * 9)) / 4));
 
             return { cal: tdee, pro: proGrams, carb: carbGrams, fat: fatGrams };
