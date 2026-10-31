@@ -9,6 +9,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #000000; color: #ffffff; }
@@ -61,19 +62,24 @@
             <!-- Day Selection & Progress -->
             <div class="bg-card border border-custom rounded-xl p-4 space-y-3">
                 <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-400 uppercase font-mono tracking-wider">Select Training Split Slot</span>
+                    <span class="text-gray-400 uppercase font-mono tracking-wider">Select Training Day</span>
                     <span id="difficulty-badge" class="bg-neutral-800 text-gray-300 px-2 py-0.5 rounded text-[10px] uppercase font-mono">Beginner</span>
                 </div>
                 
-                <div id="day-selector-container" class="grid grid-cols-3 gap-2">
-                    <!-- Dynamic Day Slots -->
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="selectDay('Push A')" class="day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition" data-day="Push A">Push A</button>
+                    <button onclick="selectDay('Pull A')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Pull A">Pull A</button>
+                    <button onclick="selectDay('Legs A')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Legs A">Legs A</button>
+                    <button onclick="selectDay('Push B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Push B">Push B</button>
+                    <button onclick="selectDay('Pull B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Pull B">Pull B</button>
+                    <button onclick="selectDay('Legs B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Legs B">Legs B</button>
                 </div>
 
                 <!-- Daily Workout Completion Progress Bar -->
                 <div class="pt-2 border-t border-custom space-y-1">
                     <div class="flex justify-between text-[11px]">
                         <span class="text-gray-400">Workout Progress</span>
-                        <span id="workout-progress-text" class="font-mono text-white">0 / 0 Completed</span>
+                        <span><span id="workout-progress-text" class="font-mono text-white">0 / 0 Done</span> <button onclick="clearDone()" class="text-[10px] text-gray-500 underline ml-1">clear</button></span>
                     </div>
                     <div class="w-full bg-neutral-900 rounded-full h-2 overflow-hidden border border-custom">
                         <div id="workout-progress-bar" class="bg-white h-full w-0 transition-all duration-300"></div>
@@ -81,17 +87,12 @@
                 </div>
             </div>
 
-            <!-- Workout Day Action Header (Rename Day & Add Exercise) -->
-            <div class="flex justify-between items-center px-1 gap-2">
-                <div class="flex items-center gap-1.5">
-                    <input type="text" id="active-day-title-input" onchange="renameActiveDay(this.value)" class="bg-neutral-950 border border-custom rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white font-mono w-32 focus:outline-none focus:border-white" title="Click to rename day">
-                    <span class="text-[10px] text-gray-500 font-mono">(Click to Rename)</span>
-                </div>
-                <div class="flex gap-1.5">
-                    <button onclick="openAddExerciseModal()" class="bg-neutral-900 hover:bg-neutral-800 border border-custom text-xs text-gray-200 px-2.5 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Add Ex
-                    </button>
-                </div>
+            <!-- Workout Day Action Header (Add Exercise) -->
+            <div class="flex justify-between items-center px-1">
+                <span id="current-routine-title" class="text-xs font-bold uppercase tracking-wider text-gray-400 font-mono">Push A Routine</span>
+                <button onclick="openAddExerciseModal()" class="bg-neutral-900 hover:bg-neutral-800 border border-custom text-xs text-gray-200 px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus text-[10px]"></i> Add Exercise to Routine
+                </button>
             </div>
 
             <div id="workout-container" class="space-y-3">
@@ -234,9 +235,17 @@
                     </select>
                 </div>
 
+                <div class="space-y-2 pt-2 border-t border-custom">
+                    <label class="text-xs text-gray-400 block">Exercise How-To Animations</label>
+                    <select id="anim-select" onchange="changeAnim(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none focus:border-white">
+                        <option value="on">Show how-to guides (start/end + animation)</option>
+                        <option value="off">Hide (checklist only)</option>
+                    </select>
+                </div>
+
                 <div class="pt-3 border-t border-custom">
                     <button onclick="resetRoutineToDefault()" class="w-full py-2 bg-neutral-900 border border-custom text-xs text-red-400 rounded-lg hover:bg-neutral-800 transition">
-                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset All Routines to Defaults
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Active Routine to Defaults
                     </button>
                 </div>
             </div>
@@ -367,49 +376,50 @@
     </div>
 
     <script>
-        const defaultWorkouts = {
-            "Push A": [
-                { name: "Seated Machine Chest Press", sets: "3", reps: "10-12", cues: "Keep back flat against pad. Smooth controlled push.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Incline Dumbbell Press", sets: "3", reps: "10-12", cues: "Focus on upper chest stretch at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Shoulder shaping: control weight on descent.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                { name: "Triceps Rope Pushdowns", sets: "3", reps: "12-15", cues: "Lock elbows to side, flare rope at bottom.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
-            ],
-            "Pull A": [
-                { name: "Lat Pulldown (Neutral Grip)", sets: "3", reps: "10-12", cues: "Pull bar down toward upper chest for back width.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                { name: "Seated Cable Row", sets: "3", reps: "10-12", cues: "Squeeze shoulder blades for posture.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Cable Face Pulls", sets: "3", reps: "15-20", cues: "Rear delt and posture focus.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                { name: "Dumbbell Hammer Curls", sets: "3", reps: "12-15", cues: "Controlled arm shaping.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
-            ],
-            "Legs A": [
-                { name: "Leg Press (High & Wide Stance)", sets: "3", reps: "10-12", cues: "Glute and hamstring focus.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Dumbbell Romanian Deadlifts", sets: "3", reps: "10-12", cues: "Hinge hips back for glutes & hamstrings.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
-                { name: "Lying Leg Curls", sets: "3", reps: "12-15", cues: "Keep hips glued to pad.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Standing Calf Raises", sets: "3", reps: "15-20", cues: "Hold peak squeeze for 1 second.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" }
-            ],
-            "Push B": [
-                { name: "Seated Dumbbell Shoulder Press", sets: "3", reps: "10-12", cues: "Brace core, press overhead.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                { name: "Pec Deck Chest Flyes", sets: "3", reps: "12-15", cues: "Slight bend in elbows throughout.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Side delt isolation.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                { name: "Overhead Cable Extension", sets: "3", reps: "12-15", cues: "Triceps stretch overhead.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
-            ],
-            "Pull B": [
-                { name: "Chest-Supported Row Machine", sets: "3", reps: "10-12", cues: "Drive elbows back toward hips.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Straight-Arm Cable Pulldown", sets: "3", reps: "12-15", cues: "Isolate lats.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                { name: "Reverse Pec Deck", sets: "3", reps: "15-20", cues: "Rear delts and upper back.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                { name: "Incline Dumbbell Biceps Curls", sets: "3", reps: "12-15", cues: "Full stretch at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
-            ],
-            "Legs B": [
-                { name: "Barbell / Smith Hip Thrusts", sets: "4", reps: "10-12", cues: "Ultimate glute shaping exercise.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
-                { name: "Bulgarian Split Squats", sets: "3", reps: "10 / leg", cues: "Deep stretch for glutes and quads.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Seated Leg Extensions", sets: "3", reps: "12-15", cues: "Quad isolation.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                { name: "Cable Pull-Throughs", sets: "3", reps: "15", cues: "Glute hinge movement.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" }
-            ]
+        const presetWorkouts = {
+            beginner: {
+                "Push A": [
+                    { name: "Seated Machine Chest Press", sets: "3", reps: "10-12", cues: "Keep back flat against pad. Smooth controlled push.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Incline Dumbbell Press (Light)", sets: "3", reps: "10-12", cues: "Focus on chest stretch at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Control weight on negative descent.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Triceps Rope Pushdowns", sets: "3", reps: "12-15", cues: "Lock elbows to side, flare rope at bottom.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
+                ],
+                "Pull A": [
+                    { name: "Lat Pulldown (Neutral Grip)", sets: "3", reps: "10-12", cues: "Pull bar down toward upper chest.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Seated Cable Row", sets: "3", reps: "10-12", cues: "Squeeze shoulder blades together at torso.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Cable Face Pulls", sets: "3", reps: "15-20", cues: "Pull toward forehead for posture.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Dumbbell Hammer Curls", sets: "3", reps: "12-15", cues: "Keep wrists neutral facing each other.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
+                ],
+                "Legs A": [
+                    { name: "Leg Press Machine", sets: "3", reps: "10-12", cues: "Feet high on plate for glute/hamstring focus.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Dumbbell Goblet Squats", sets: "3", reps: "10-12", cues: "Hold weight close to chest, sit deep.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Lying Leg Curls", sets: "3", reps: "12-15", cues: "Keep hips pressed flat into pad.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Standing Calf Raises", sets: "3", reps: "15-20", cues: "Hold peak squeeze for 1 second.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" }
+                ],
+                "Push B": [
+                    { name: "Seated Dumbbell Shoulder Press", sets: "3", reps: "10-12", cues: "Keep core braced, press overhead.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Pec Deck Chest Flyes", sets: "3", reps: "12-15", cues: "Slight bend in elbows throughout motion.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Incline Bench Lateral Raises", sets: "3", reps: "12-15", cues: "Chest flat on bench to isolate side delts.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Overhead Cable Extension", sets: "3", reps: "12-15", cues: "Keep elbows pointed forward framing head.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
+                ],
+                "Pull B": [
+                    { name: "Chest-Supported Row Machine", sets: "3", reps: "10-12", cues: "Drive elbows back toward hips.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Straight-Arm Cable Pulldown", sets: "3", reps: "12-15", cues: "Sweep bar down toward thighs.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Reverse Pec Deck (Rear Delts)", sets: "3", reps: "15-20", cues: "Keep arms parallel to ground.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Incline Dumbbell Biceps Curls", sets: "3", reps: "12-15", cues: "Full arm extension at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
+                ],
+                "Legs B": [
+                    { name: "Glute Hyper-Extension (Roman Chair)", sets: "3", reps: "12-15", cues: "Squeeze glutes hard at full extension.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Leg Extension Machine", sets: "3", reps: "12-15", cues: "Controlled extension without swinging weight.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Seated Leg Curls", sets: "3", reps: "12-15", cues: "Focus on hamstring contraction.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Cable Pallof Press", sets: "3", reps: "12 / side", cues: "Hold center for core stability.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" }
+                ]
+            }
         };
 
         let profiles = JSON.parse(localStorage.getItem('jm_profiles')) || ['Default Profile'];
         let activeProfile = localStorage.getItem('jm_active_profile') || 'Default Profile';
-        let defaultDayKeys = Object.keys(defaultWorkouts);
-        let activeDayIndex = 0;
+        let currentDay = "Push A";
         let editModalIndex = null;
 
         function getProfileData(key, fallback) {
@@ -421,19 +431,15 @@
             localStorage.setItem(`jm_${activeProfile}_${key}`, JSON.stringify(value));
         }
 
-        function getDayNames() {
-            return getProfileData('custom_day_names', [...defaultDayKeys]);
-        }
-
         function initApp() {
             document.getElementById('current-user-display').innerText = `User: ${activeProfile}`;
             renderProfileDropdown();
             loadUserStatsForm();
-            renderDaySelector();
             renderWorkout();
             updateNutritionUI();
             updateWaterUI();
             document.getElementById('autotimer-select').value = getProfileData('autotimer', '60');
+            document.getElementById('anim-select').value = getProfileData('anim', 'on');
         }
 
         function renderProfileDropdown() {
@@ -491,7 +497,6 @@
         function switchProfile(name) {
             activeProfile = name;
             localStorage.setItem('jm_active_profile', activeProfile);
-            activeDayIndex = 0;
             initApp();
         }
 
@@ -519,45 +524,16 @@
             activeBtn.classList.remove('hover:text-white');
         }
 
-        function renderDaySelector() {
-            const dayNames = getDayNames();
-            const container = document.getElementById('day-selector-container');
-            let html = '';
-            dayNames.forEach((name, idx) => {
-                const isActive = idx === activeDayIndex;
-                const btnClass = isActive ? "day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition truncate px-1" : "day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition truncate px-1";
-                html += `<button onclick="selectDayIndex(${idx})" class="${btnClass}" title="${name}">${name}</button>`;
+        function selectDay(day) {
+            currentDay = day;
+            document.getElementById('current-routine-title').innerText = `${day} Routine`;
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                if(btn.dataset.day === day) {
+                    btn.className = "day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition";
+                } else {
+                    btn.className = "day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition";
+                }
             });
-            container.innerHTML = html;
-        }
-
-        function selectDayIndex(idx) {
-            activeDayIndex = idx;
-            renderDaySelector();
-            renderWorkout();
-        }
-
-        function getCurrentDayKey() {
-            const dayNames = getDayNames();
-            return dayNames[activeDayIndex] || defaultDayKeys[activeDayIndex];
-        }
-
-        function renameActiveDay(newName) {
-            const cleanName = newName.trim();
-            if(!cleanName) return;
-            let dayNames = getDayNames();
-            const oldKey = dayNames[activeDayIndex];
-            dayNames[activeDayIndex] = cleanName;
-            setProfileData('custom_day_names', dayNames);
-
-            // Migrate saved workout data to new key
-            const oldWorkout = localStorage.getItem(`jm_${activeProfile}_workout_${oldKey}`);
-            if(oldWorkout) {
-                localStorage.setItem(`jm_${activeProfile}_workout_${cleanName}`, oldWorkout);
-                localStorage.removeItem(`jm_${activeProfile}_workout_${oldKey}`);
-            }
-
-            renderDaySelector();
             renderWorkout();
         }
 
@@ -571,34 +547,34 @@
         }
 
         function getActiveWorkoutList() {
-            const dayKey = getCurrentDayKey();
-            const customList = getProfileData(`workout_${dayKey}`, null);
+            const diff = getProfileData('difficulty', 'beginner');
+            document.getElementById('difficulty-badge').innerText = diff;
+            document.getElementById('difficulty-select').value = diff;
+            const customList = getProfileData(`workout_${currentDay}`, null);
             if(customList) return customList;
-            return JSON.parse(JSON.stringify(defaultWorkouts[dayKey] || defaultWorkouts["Push A"]));
+            return JSON.parse(JSON.stringify((presetWorkouts[diff] || presetWorkouts.beginner)[currentDay] || []));
         }
 
         function renderWorkout() {
-            const dayKey = getCurrentDayKey();
-            document.getElementById('active-day-title-input').value = dayKey;
-
             const container = document.getElementById('workout-container');
             const list = getActiveWorkoutList();
             let completedCount = 0;
 
             let html = '';
             list.forEach((ex, idx) => {
-                const savedWeight = getProfileData(`${dayKey}_ex_${idx}_w`, '');
-                const savedReps = getProfileData(`${dayKey}_ex_${idx}_r`, '');
-                const prevWeight = getProfileData(`${dayKey}_ex_${idx}_prev_w`, '');
-                const prevReps = getProfileData(`${dayKey}_ex_${idx}_prev_r`, '');
+                const savedWeight = getProfileData(`${currentDay}_ex_${idx}_w`, '');
+                const savedReps = getProfileData(`${currentDay}_ex_${idx}_r`, '');
+                const prevWeight = getProfileData(`${currentDay}_ex_${idx}_prev_w`, '');
+                const prevReps = getProfileData(`${currentDay}_ex_${idx}_prev_r`, '');
 
-                if(savedWeight !== '' || savedReps !== '') completedCount++;
+                const done = getProfileData(`${currentDay}_ex_${idx}_done`, false);
+                if(done) completedCount++;
 
                 const prevDisplay = (prevWeight || prevReps) ? `Last: ${prevWeight || '0'}kg × ${prevReps || '0'} reps` : 'No previous log';
                 const gifUrl = ex.gif || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80';
 
                 html += `
-                    <div class="bg-card border border-custom rounded-xl p-3.5 space-y-2.5">
+                    <div class="bg-card border ${done ? 'border-green-700' : 'border-custom'} rounded-xl p-3.5 space-y-2.5">
                         <div class="flex gap-3 items-center">
                             <img src="${gifUrl}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover border border-custom shrink-0">
                             <div class="flex-1 min-w-0">
@@ -620,26 +596,299 @@
                             <input type="text" placeholder="Weight (kg)" value="${savedWeight}" onchange="saveExerciseData(${idx}, 'w', this.value)" class="w-1/2 bg-black border border-custom rounded px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-white font-mono">
                             <input type="text" placeholder="Reps Done" value="${savedReps}" onchange="saveExerciseData(${idx}, 'r', this.value)" class="w-1/2 bg-black border border-custom rounded px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-white font-mono">
                         </div>
+                        ${guideHTML(idx, ex)}
+                        <button onclick="toggleDone(${idx})" class="w-full py-2 rounded-lg text-xs font-bold transition ${done ? 'bg-green-600 text-white' : 'bg-neutral-900 border border-custom text-gray-300 hover:bg-neutral-800'}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-circle'} mr-1"></i>${done ? 'Done' : 'Mark as done'}</button>
                     </div>
                 `;
             });
 
             container.innerHTML = html;
+            startAnim();
 
             const total = list.length;
             const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
-            document.getElementById('workout-progress-text').innerText = `${completedCount} / ${total} Logged (${pct}%)`;
+            document.getElementById('workout-progress-text').innerText = `${completedCount} / ${total} Done (${pct}%)`;
             document.getElementById('workout-progress-bar').style.width = `${pct}%`;
         }
 
+        // ---- REFINED HUMAN ANATOMICAL & BIOOMECHANICALLY CORRECT 3D ANIMATIONS ----
+        // Angles tuned for natural ergonomic human range (degrees)
+        const ANIM = {
+            press: {k:'s', a:[180, 275, 80], b:[180, 85, 95]},
+            incline: {k:'s', a:[210, 280, 85], b:[210, 110, 105]},
+            ohp: {k:'s', a:[180, 15, 175], b:[180, 170, 175]},
+            lateral: {k:'f', a:[180, 0, 0], b:[180, 88, 85]},
+            pushdown: {k:'f', cab:1, a:[180, 10, 85], b:[180, 10, 15]},
+            ohext: {k:'f', cab:1, a:[180, 160, 310], b:[180, 160, 160]},
+            pulldown: {k:'s', cab:1, a:[185, 150, 150], b:[185, 15, 100]},
+            row: {k:'s', cab:2, a:[180, 80, 80], b:[180, 275, 80]},
+            facepull: {k:'f', cab:2, a:[180, 85, 85], b:[180, 260, 95]},
+            curl: {k:'f', a:[180, 0, 0], b:[180, 0, 145]},
+            squat: {k:'f', a:[180, 15, 100, 0, 0], b:[145, 15, 100, 90, 40]},
+            legpress: {k:'s', a:[210, 25, 90, 155, 65], b:[210, 25, 90, 125, 120]},
+            legext: {k:'s', a:[180, 10, 75, 90, 0], b:[180, 10, 75, 90, 88]},
+            legcurl: {k:'s', a:[180, 10, 75, 90, 88], b:[180, 10, 75, 90, 12]},
+            calf: {k:'f', a:[180, 0, 0, 0, 0, 0], b:[180, 0, 0, 0, 0, 15]},
+            hyper: {k:'h', a:[28, 90, 245, 270, 270], b:[90, 90, 245, 270, 270]},
+            pallof: {k:'f', cab:2, a:[180, 40, 90], b:[180, 85, 85]},
+            fly: {k:'s', a:[180, 265, 275], b:[180, 85, 85]},
+            rfly: {k:'s', a:[180, 85, 85], b:[180, 260, 260]},
+            straight: {k:'f', cab:1, a:[172, 140, 140], b:[172, 15, 15]}
+        };
+        ANIM.pushup = {k:'p', a:[115, 0, 0, 295, 295], b:[102, 280, 0, 282, 282]};
+
+        const MUSCLE = {press:'CU', incline:'CU', ohp:'U', lateral:'U', pushdown:'U', ohext:'U', pulldown:'KU', row:'KU', facepull:'U', curl:'U', squat:'H', legpress:'H', legext:'H', legcurl:'H', calf:'S', hyper:'KH', pallof:'W', fly:'C', rfly:'U', straight:'KU', pushup:'CU'};
+        ANIM.lateral.fz = 1;
+        ['curl', 'incline', 'ohp', 'lateral'].forEach(k => { ANIM[k].db = 1; });
+        ['press', 'incline', 'ohp', 'pushup'].forEach(k => { ANIM[k].fl = 1.35; });
+        ['curl', 'pushdown', 'row'].forEach(k => { ANIM[k].fl = 0.8; });
+        Object.keys(MUSCLE).forEach(k => { ANIM[k].m = MUSCLE[k]; });
+
+        const FORM = {
+            press:{w:'Chest, front delts, triceps',s:'Adjust seat so handles are at mid-chest level.|Back flat against the pad, shoulder blades pinched back, feet planted firmly.|Press smoothly until arms are nearly straight without locking elbows.|Lower over 2-3 seconds to feel a gentle chest stretch.',x:'Shrugging shoulders upward.|Hard-locking elbows at top extension.|Lifting hips off the seat or bouncing weight.',br:'Exhale pushing, inhale returning. 2s concentric, 3s eccentric.'},
+            incline:{w:'Upper chest, front delts, triceps',s:'Set bench to 30-45 degrees. Sit back with feet flat.|Press weights up and slightly inward over your upper chest, wrists stacked over elbows.|Lower until handles/dumbbells align with upper chest level.',x:'Flaring elbows out to 90 degrees wide.|Arching lower back excessively off the bench.|Bouncing at bottom range.',br:'Exhale pushing, inhale returning.'},
+            ohp:{w:'Shoulders, triceps, upper chest',s:'Sit tall with core braced and ribs tucked down.|Press straight overhead without arching the lower back.|Lower under control back to shoulder level.',x:'Arching lower back to compensate.|Pressing forward instead of straight up.',br:'Exhale pressing, inhale lowering.'},
+            lateral:{w:'Side delts',s:'Stand tall with slight forward lean and soft elbows; use controlled weights.|Lead with elbows out to sides to shoulder height.|Lower slowly without swinging.',x:'Using momentum with the torso.|Raising above shoulder level (traps take over).',br:'Exhale raising, inhale lowering.'},
+            pushdown:{w:'Triceps',s:'Stand close to cable, pin elbows tightly to ribs.|Push down until arms are fully straight, spreading rope ends at bottom.|Let rise slowly until forearms pass 90 degrees.',x:'Elbows drifting forward or flaring out.',br:'Exhale pushing down.'},
+            ohext:{w:'Triceps (long head)',s:'Face away from stack, elbows pointing forward framing ears.|Extend forearms forward and up until straight.|Lower behind head for deep triceps stretch.',x:'Moving upper arms or flaring elbows wide.',br:'Exhale extending.'},
+            pulldown:{w:'Lats, biceps, rear delts',s:'Grip bar slightly wider than shoulders, chest up, slight lean back.|Pull bar to upper chest, driving elbows down and back.|Return smoothly to full arm extension.',x:'Pulling behind the neck or leaning/swinging wildly.',br:'Exhale pulling down.'},
+            row:{w:'Mid back, lats, biceps, rear delts',s:'Sit tall, chest against pad or upright torso, arms extended.|Pull handle to lower ribs, squeezing shoulder blades together.|Return slowly without rounding shoulders.',x:'Rocking torso or shrugging shoulders.',br:'Exhale pulling.'},
+            facepull:{w:'Rear delts, upper back, rotator cuff',s:'Rope at face height, step back into staggered stance.|Pull toward forehead with elbows high and wide.|Pause 1s, return with control.',x:'Leaning back too far or pulling too low.',br:'Exhale pulling.'},
+            curl:{w:'Biceps, forearms',s:'Stand tall, elbows tucked at sides.|Curl weights up without moving upper arms.|Lower fully over 3 seconds.',x:'Swinging hips or upper body.',br:'Exhale curling.'},
+            squat:{w:'Quads, glutes, core',s:'Hold weight at chest, feet shoulder-width, toes turned out slightly.|Sit down and back between knees, chest upright.|Drive through mid-foot to stand.',x:'Knees caving inward or heels lifting.',br:'Inhale down, exhale up.'},
+            legpress:{w:'Quads, glutes, hamstrings',s:'Back and hips flat on pad, feet shoulder-width on plate.|Lower until knees are at 90 degrees, hips stay down.|Press through whole foot, stopping short of lockout.',x:'Lifting hips off pad or locking knees hard.',br:'Inhale down, exhale pressing.'},
+            legext:{w:'Quads',s:'Back against pad, knees aligned with machine pivot.|Extend legs until nearly straight, squeeze quads for 1s.|Lower slowly.',x:'Kicking or swinging weight up.',br:'Exhale extending.'},
+            legcurl:{w:'Hamstrings',s:'Hips pressed into pad, roller above heels.|Curl heels toward glutes smoothly.|Return slowly to straight legs.',x:'Lifting hips off pad.',br:'Exhale curling.'},
+            calf:{w:'Calves',s:'Balls of feet on edge, heels hanging free.|Lower deep for stretch, rise high onto toes.|Pause 1s at top.',x:'Bouncing at bottom.',br:'Exhale rising.'},
+            hyper:{w:'Glutes, hamstrings, lower back',s:'Pad below hip bones, body straight.|Hinge at hips with flat back, lower down.|Squeeze glutes to return to straight line.',x:'Hyperextending past straight line or rounding back.',br:'Inhale down, exhale rising.'},
+            pallof:{w:'Core (anti-rotation), obliques',s:'Stand side-on to cable, hold handle at sternum.|Press straight out, resisting rotation; keep hips and shoulders square.|Hold 2s, return.',x:'Torso twisting toward cable.',br:'Exhale pressing out.'},
+            fly:{w:'Chest, front delts',s:'Seat at chest level, slight bend in elbows.|Sweep arms together in hugging arc, squeeze chest.|Open slowly to comfortable stretch.',x:'Shrugging shoulders or straightening arms.',br:'Exhale closing.'},
+            rfly:{w:'Rear delts, upper back',s:'Chest against pad, handles at shoulder height.|Sweep arms back in wide arc until aligned with shoulders.|Return slowly.',x:'Shrugging or using lower back momentum.',br:'Exhale sweeping back.'},
+            straight:{w:'Lats, triceps (long head), core',s:'Stand back from high cable, hinge slightly at hips, arms straight.|Sweep bar down to thighs keeping arms straight.|Control back up.',x:'Bending elbows into pushdown.',br:'Exhale pulling down.'},
+            pushup:{w:'Chest, front delts, triceps, core',s:'Hands under shoulders, body in straight line.|Lower chest toward floor with elbows at 45 degrees.|Push floor away until arms are straight.',x:'Hips sagging or elbows flaring wide.',br:'Inhale down, exhale pushing.'}
+        };
+        Object.keys(FORM).forEach(k => Object.assign(ANIM[k], FORM[k]));
+
+        const VARIANTS = [[/hammer/, 'Hammer grip: palms face each other.'], [/incline.*curl/, 'Set bench to 45-60 degrees for full stretch.'], [/neutral/, 'Neutral grip: palms face each other.'], [/chest-supported/, 'Keep chest glued to pad.'], [/lying leg curl/, 'Keep hips pressed into bench.'], [/seated leg curl/, 'Lock thigh pad down snugly.'], [/leg press/, 'Feet high target glutes/hamstrings.'], [/goblet/, 'Hold dumbbell vertical at chest.'], [/cable lateral/, 'Stand side-on to cable.'], [/incline bench lateral/, 'Lie chest-down on incline bench.'], [/rope/, 'Spread rope ends at bottom.']];
+
+        const PAT_RULES = [[/push-?up|press-?up/,'pushup'],[/pallof/,'pallof'],[/face ?pull/,'facepull'],[/straight/,'straight'],[/pull-?down|pull down/,'pulldown'],[/push-?down/,'pushdown'],[/overhead.*(ext|tricep)|skull/,'ohext'],[/reverse (pec|fly|flye)|rear delt/,'rfly'],[/fly|pec deck/,'fly'],[/lateral|side raise/,'lateral'],[/leg curl|hamstring curl/,'legcurl'],[/leg ext/,'legext'],[/leg press/,'legpress'],[/calf/,'calf'],[/hyper|roman|back ext/,'hyper'],[/squat|lunge/,'squat'],[/curl/,'curl'],[/shoulder press|overhead press|arnold/,'ohp'],[/incline/,'incline'],[/press|dip/,'press'],[/row/,'row']];
+        function matchPat(name) {
+            const n = (name || '').toLowerCase();
+            const hit = PAT_RULES.find(r => r[0].test(n));
+            return hit ? hit[1] : null;
+        }
+
+        function posePts(p, t, ee) {
+            const e = ee ?? (1 - Math.cos(t)) / 2, r = Math.PI / 180;
+            const g = p.k === 'f' ? [0, 0] : [90, 0];
+            const fill = a => [a[0], a[1], a[2], a[3] ?? g[0], a[4] ?? g[1], a[5] ?? 0];
+            const A = fill(p.a), B = fill(p.b);
+            const [T, U, F, H, S, L] = A.map((v, i) => v + (B[i] - v) * e);
+            const d = (a, l) => [Math.sin(a * r) * l, Math.cos(a * r) * l];
+            const add = (x, y) => [x[0] + y[0], x[1] + y[1]], sub = (x, y) => [x[0] - y[0], x[1] - y[1]];
+            let hip, kn, an;
+            if (p.k === 'f') { an = [90, 126 - L]; kn = sub(an, d(S, 32)); hip = sub(kn, d(H, 32)); }
+            else if (p.k === 'p') { hip = sub(sub(sub([135, 126], d(F, 22)), d(U, 24)), d(T, 38)); kn = add(hip, d(H, 32)); an = add(kn, d(S, 32)); }
+            else { hip = p.k === 'h' ? [80, 72] : [78, 92]; kn = add(hip, d(H, 32)); an = add(kn, d(S, 32)); }
+            const sh = add(hip, d(T, 38)), el = add(sh, d(U, 24));
+            return { hip, kn, an, sh, el, hd: add(sh, d(T, 11)), ha: add(el, d(F, 22)), U, F };
+        }
+
+        function figSvg(p, t) {
+            const { hip, kn, an, sh, hd, el, ha } = posePts(p, t), r = Math.PI / 180, d = (a, l) => [Math.sin(a * r) * l, Math.cos(a * r) * l];
+            const td = [(sh[0] - hip[0]) / 38, (sh[1] - hip[1]) / 38];
+            const m = k => (p.m || '').includes(k);
+            const ln = (a, b, x = '') => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" ${x}/>`;
+            const seg = (a, b, k) => ln(a, b, m(k) ? 'stroke="#ef4444"' : '');
+            const equip = p.k === 's' ? '<rect x="58" y="96" width="44" height="5" fill="#444" stroke="none"/>'
+                : p.k === 'h' ? '<rect x="70" y="74" width="20" height="8" fill="#444" stroke="none"/><path d="M80 82V128" stroke="#444" stroke-width="3"/>' : '';
+            const cab = p.cab ? ln(ha, p.cab === 1 ? [150, 4] : [176, sh[1]], 'stroke="#555" stroke-width="2" stroke-dasharray="3"') : '';
+            return `<g stroke-linecap="round" fill="none" stroke="#d4d4d4" stroke-width="7">${equip}${cab}${seg(hip, kn, 'H')}${seg(kn, an, 'S')}${ln(an, [an[0] + 9, an[1]], 'stroke-width="5"')}${ln(hip, sh, 'stroke-width="10"')}${seg(sh, el, 'U')}${seg(el, ha, 'F')}<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="8" stroke-width="3" fill="#0a0a0a"/><circle cx="${ha[0].toFixed(1)}" cy="${ha[1].toFixed(1)}" r="5" fill="#60a5fa" stroke="none"/></g>`;
+        }
+
+        let animRAF = null, R3 = null;
+        const openGuides = {}, guideMode = {};
+        function ok3D() {
+            if (R3) return true;
+            if (R3 === false || !window.THREE) return false;
+            try {
+                const T = THREE, renderer = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+                renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+                const scene = new T.Scene(), cam = new T.PerspectiveCamera(35, 1.25, 0.1, 50);
+                scene.add(new T.HemisphereLight(0xffffff, 0x2a2a34, 0.75));
+                const dl = new T.DirectionalLight(0xffffff, 0.85); dl.position.set(2.5, 4.5, 3); dl.castShadow = true;
+                dl.shadow.mapSize.set(1024, 1024); Object.assign(dl.shadow.camera, { left: -2.5, right: 2.5, top: 2.5, bottom: -2.5, near: 0.5, far: 12 }); scene.add(dl);
+                const rim = new T.DirectionalLight(0x8899ff, 0.35); rim.position.set(-3, 2, -3); scene.add(rim);
+                const M = (c, ro = 0.6, x = {}) => new T.MeshStandardMaterial(Object.assign({ color: c, roughness: ro }, x));
+                const mats = { skin: M(0xc99a78, 0.65), hot: M(0xe23b3b, 0.5, { emissive: 0x3a0606 }), shirt: M(0x4b5563, 0.8), shorts: M(0x2b3140, 0.8), hair: M(0x2b2118, 0.9), shoe: M(0xe5e7eb, 0.7), dark: M(0x3d3d46, 0.5, { metalness: 0.4 }), seat: M(0x2f3340, 0.8), plate: M(0x1c1c20, 0.4, { metalness: 0.6 }) };
+                const put = m => { m.castShadow = true; scene.add(m); return m; };
+                const mesh = (g, mat = mats.skin) => put(new T.Mesh(g, mat));
+                const prof = (rp, rd, bulge, peak) => { const pts = []; for (let i = 0; i <= 12; i++) { const u = i / 12; pts.push(new T.Vector2(Math.max(0.012, rp + (rd - rp) * u + bulge * Math.exp(-(((u - peak) / 0.28) ** 2))), u - 0.5)); } return new T.LatheGeometry(pts, 18); };
+                const torsoGeo = new T.LatheGeometry([[0.12, -0.5], [0.108, -0.25], [0.112, 0], [0.13, 0.2], [0.138, 0.34], [0.125, 0.44], [0.085, 0.5]].map(a => new T.Vector2(a[0], a[1])), 20);
+                const sph = (r, mat = mats.skin, sx = 1, sy = 1, sz = 1) => { const m = mesh(new T.SphereGeometry(r, 18, 14), mat); m.scale.set(sx, sy, sz); return m; };
+                const sideways = (g, mat) => { const m = mesh(g, mat); m.rotation.x = Math.PI / 2; return m; };
+                const two = fn => [fn(), fn()];
+                const floor = new T.Mesh(new T.CircleGeometry(1.7, 56), M(0x1a1a1e, 1));
+                floor.rotation.x = -Math.PI / 2; floor.position.y = -0.04; floor.receiveShadow = true; scene.add(floor);
+                const ring = new T.Mesh(new T.RingGeometry(1.64, 1.7, 64), new T.MeshBasicMaterial({ color: 0x3a3a46 }));
+                ring.rotation.x = -Math.PI / 2; ring.position.y = -0.035; scene.add(ring);
+                R3 = { renderer, scene, cam, mats,
+                    torso: mesh(torsoGeo, mats.shirt), pelvis: sph(0.11, mats.shorts, 1, 0.9, 1.5), neck: mesh(new T.CylinderGeometry(0.042, 0.05, 1, 12)),
+                    head: sph(0.1, mats.skin, 0.92, 1.12, 0.95), hair: sph(0.104, mats.hair, 0.95, 1.02, 1), nose: sph(0.02),
+                    blob: sph(1, mats.hot), seat: mesh(new T.BoxGeometry(0.55, 0.06, 0.4), mats.seat), back: mesh(new T.BoxGeometry(0.06, 0.9, 0.42), mats.seat), post: mesh(new T.BoxGeometry(0.08, 1, 0.08), mats.dark),
+                    cable: mesh(new T.CylinderGeometry(0.007, 0.007, 1, 6), mats.dark),
+                    thigh: two(() => mesh(prof(0.095, 0.062, 0.035, 0.55))), shin: two(() => mesh(prof(0.062, 0.04, 0.03, 0.25))),
+                    ua: two(() => mesh(prof(0.056, 0.046, 0.02, 0.45))), fa: two(() => mesh(prof(0.05, 0.032, 0.018, 0.25))),
+                    shorts: two(() => mesh(new T.CylinderGeometry(0.122, 0.126, 1, 16), mats.shorts)),
+                    jk: two(() => sph(0.058)), je: two(() => sph(0.046)), js: two(() => sph(0.078)), hand: two(() => sph(0.045)),
+                    foot: two(() => sph(0.1, mats.shoe, 1.3, 0.55, 0.72)),
+                    grip: two(() => sideways(new T.CylinderGeometry(0.014, 0.014, 0.16, 10), mats.dark)),
+                    plate: [0, 1, 2, 3].map(() => sideways(new T.CylinderGeometry(0.075, 0.075, 0.035, 20), mats.plate)) };
+                return true;
+            } catch (err) { R3 = false; return false; }
+        }
+
+        function tempo(ms) {
+            const ph = (ms % 4600) / 4600, ss = x => x * x * (3 - 2 * x);
+            if (ph < 0.12) return 0;
+            if (ph < 0.42) return ss((ph - 0.12) / 0.3);
+            if (ph < 0.54) return 1;
+            if (ph < 0.94) return ss(1 - (ph - 0.54) / 0.4);
+            return 0;
+        }
+
+        function place(m, a, b, sx = 1, sz = 1) {
+            const dv = b.clone().sub(a), len = dv.length() || 1e-6;
+            m.position.copy(a).add(b).multiplyScalar(0.5);
+            m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dv.normalize());
+            m.scale.set(sx, len, sz);
+        }
+
+        function pose3D(p, t, ee) {
+            const R = R3, P = posePts(p, t, ee), S = 0.0175, r = Math.PI / 180, V3 = THREE.Vector3;
+            const V = (pt, z = 0) => new V3((pt[0] - 90) * S, (126 - pt[1]) * S, z);
+            const mk = p.m || '', mat = k => (mk.includes(k) ? R.mats.hot : R.mats.skin);
+            const hip = V(P.hip), sh = V(P.sh), hdp = V(P.hd), td = sh.clone().sub(hip).normalize(), fw = new V3(td.y, -td.x, 0), tz = Math.atan2(-td.x, td.y);
+            place(R.torso, hip, sh, 0.85, 1.45);
+            place(R.neck, sh, hdp);
+            R.pelvis.position.copy(hip); R.pelvis.rotation.z = tz;
+            R.head.position.copy(hdp); R.hair.position.set(hdp.x - 0.012, hdp.y + 0.022, 0); R.nose.position.set(hdp.x + 0.095, hdp.y - 0.012, 0);
+            [1, -1].forEach((s, i) => {
+                const lz = s * (p.k === 'p' ? 0.08 : 0.1), az = s * 0.2;
+                const h = V(P.hip, lz), k = V(P.kn, lz), a = V(P.an, lz), s3 = V(P.sh, az);
+                let e, hd;
+                if (p.fz) {
+                    e = s3.clone().add(new V3(0, -Math.cos(P.U * r) * 24 * S, s * Math.sin(P.U * r) * 24 * S));
+                    hd = e.clone().add(new V3(0, -Math.cos(P.F * r) * 22 * S, s * Math.sin(P.F * r) * 22 * S));
+                } else { e = V(P.el, az * (p.fl ?? 1)); hd = V(P.ha, az); }
+                place(R.thigh[i], h, k); R.thigh[i].material = mat('H');
+                place(R.shorts[i], h, h.clone().add(k.clone().sub(h).multiplyScalar(0.36)));
+                place(R.shin[i], k, a); R.shin[i].material = mat('S');
+                place(R.ua[i], s3, e); R.ua[i].material = mat('U');
+                place(R.fa[i], e, hd); R.fa[i].material = mat('F');
+                R.js[i].material = mat('U');
+                R.jk[i].position.copy(k); R.js[i].position.copy(s3); R.je[i].position.copy(e); R.hand[i].position.copy(hd);
+                R.foot[i].position.set(a.x + 0.06, a.y + 0.01, a.z);
+                R.grip[i].position.copy(hd); R.grip[i].visible = p.k !== 'p';
+                [0, 1].forEach(j => { const pl = R.plate[i * 2 + j]; pl.position.set(hd.x, hd.y, hd.z + (j ? -0.085 : 0.085)); pl.visible = !!p.db; });
+            });
+            const bl = R.blob; bl.visible = /[CKW]/.test(mk);
+            if (bl.visible) {
+                const core = mk.includes('W');
+                bl.position.copy(hip).addScaledVector(td, (core ? 0.28 : 0.72) * 0.665).addScaledVector(fw, mk.includes('K') ? -0.07 : 0.07);
+                bl.rotation.z = tz; bl.scale.set(0.08, core ? 0.12 : 0.19, core ? 0.17 : 0.24);
+            }
+            const sit = p.k === 's' || p.k === 'h';
+            R.seat.visible = R.post.visible = sit; R.back.visible = p.k === 's';
+            if (sit) {
+                R.seat.position.set(hip.x, hip.y - 0.13, 0);
+                R.post.scale.y = hip.y - 0.16; R.post.position.set(hip.x, (hip.y - 0.16) / 2, 0);
+                R.back.position.copy(hip).addScaledVector(td, 0.5).addScaledVector(fw, -0.14); R.back.rotation.z = tz;
+            }
+            R.cable.visible = !!p.cab;
+            if (p.cab) { const hn = R.hand[0].position; place(R.cable, hn.clone(), p.cab === 1 ? new V3(1.05, 2.15, hn.z) : new V3(1.5, sh.y, hn.z)); }
+        }
+
+        function render3D(c, ms) {
+            if (!ok3D()) return;
+            const R = R3, p = ANIM[c.dataset.pat], anim = c.dataset.t === 'anim';
+            pose3D(p, anim ? 0 : +c.dataset.t, anim ? tempo(ms) : undefined);
+            const w = c.width, h = c.height, dom = R.renderer.domElement;
+            if (dom.width !== w || dom.height !== h) R.renderer.setSize(w, h, false);
+            R.cam.aspect = w / h; R.cam.updateProjectionMatrix();
+            const az = +c.dataset.az + (anim ? 0.5 * Math.sin(ms / 2200) : 0), wide = p.k === 'p' || p.k === 'h';
+            const tg = wide ? [p.k === 'p' ? 0.1 : 0.2, 0.6] : [0, 0.95], D = wide ? 4.8 : 4.3;
+            R.cam.position.set(tg[0] + D * Math.sin(az), tg[1] + 0.6, D * Math.cos(az));
+            R.cam.lookAt(tg[0], tg[1], 0);
+            R.renderer.render(R.scene, R.cam);
+            const ctx = c.getContext('2d'); ctx.clearRect(0, 0, w, h); ctx.drawImage(dom, 0, 0, w, h);
+        }
+
+        function dragFig(e, c) {
+            if (c._lx == null) return;
+            c.dataset.az = (+c.dataset.az - (e.clientX - c._lx) * 0.012).toFixed(3);
+            c._lx = e.clientX; c.dataset.dirty = '1';
+        }
+
+        function startAnim() {
+            cancelAnimationFrame(animRAF);
+            const tick = ms => {
+                document.querySelectorAll('canvas.fig3d').forEach(c => {
+                    if (c.offsetParent === null) return;
+                    if (c.dataset.t === 'anim' || c.dataset.dirty === '1') { render3D(c, ms); c.dataset.dirty = '0'; }
+                });
+                animRAF = requestAnimationFrame(tick);
+            };
+            animRAF = requestAnimationFrame(tick);
+        }
+
+        function guideHTML(idx, ex) {
+            if (getProfileData('anim', 'on') === 'off') return '';
+            const pat = matchPat(ex.name);
+            if (!pat) return '<p class="text-[10px] text-gray-600 italic px-1">No animation for this custom exercise (try words like "curl", "press" or "row" in its name).</p>';
+            const key = `${currentDay}_${idx}`, p = ANIM[pat], gl = ok3D(), play = gl && guideMode[key] === 'play';
+            const cv = (lbl, t, az, w, h) => `<div class="relative"><canvas class="fig3d w-full rounded border border-custom bg-neutral-950" width="${w}" height="${h}" data-pat="${pat}" data-t="${t}" data-az="${az}" data-dirty="1" style="touch-action:pan-y" onpointerdown="this._lx=event.clientX;this.setPointerCapture(event.pointerId)" onpointermove="dragFig(event,this)" onpointerup="this._lx=null"></canvas><span class="absolute top-1.5 left-2 text-[11px] font-black font-mono text-white">${lbl}</span></div>`;
+            const frame = (lbl, body) => `<svg viewBox="0 0 180 140" class="w-full h-32 bg-neutral-950 rounded border border-custom"><text x="8" y="16" fill="#e5e5e5" font-size="12" font-weight="800" font-family="monospace">${lbl}</text><path d="M0 128H180" stroke="#333"/>${body}</svg>`;
+            const view = !gl ? `<div class="grid grid-cols-2 gap-2">${frame('START', figSvg(p, 0))}${frame('END', figSvg(p, Math.PI))}</div>`
+                : play ? cv('', 'anim', 0, 480, 320)
+                : `<div class="grid grid-cols-2 gap-2">${cv('START', 0, 0.5, 300, 240)}${cv('END', Math.PI.toFixed(4), 0.5, 300, 240)}</div>`;
+            const li = a => (a || '').split('|').map(x => `<li>${x}</li>`).join('');
+            const vt = (VARIANTS.find(v => v[0].test((ex.name || '').toLowerCase())) || [])[1];
+            const formHTML = `<div class="text-[10px] font-mono text-blue-400 uppercase">Works: ${p.w}</div>
+                    <div class="text-[10px] font-mono text-gray-300 uppercase pt-1">Proper form</div>
+                    <ol class="list-decimal list-inside text-[11px] text-gray-400 space-y-0.5">${li(p.s)}</ol>
+                    ${vt ? `<p class="text-[11px] text-blue-300">Tip: ${vt}</p>` : ''}
+                    <div class="text-[10px] font-mono text-red-400 uppercase pt-1">Avoid</div>
+                    <ul class="list-disc list-inside text-[11px] text-gray-400 space-y-0.5">${li(p.x)}</ul>
+                    <p class="text-[10px] font-mono text-gray-500 pt-1">${p.br}</p>`;
+            return `<details class="bg-black border border-custom rounded" ${openGuides[key] ? 'open' : ''} ontoggle="openGuides['${key}']=this.open">
+                <summary class="cursor-pointer text-[11px] text-gray-300 font-mono p-2 select-none"><i class="fa-solid fa-circle-play mr-1"></i> How to do it</summary>
+                <div class="p-2 pt-0 space-y-2">${view}
+                    ${gl ? `<button onclick="guideMode['${key}']='${play ? 'steps' : 'play'}';renderWorkout()" class="w-full py-1.5 bg-neutral-900 border border-custom rounded text-[11px] text-gray-300 font-mono">${play ? 'Show start / end' : '<i class="fa-solid fa-play mr-1"></i> Play animation'}</button><p class="text-[10px] text-gray-600 text-center">Drag the figure to rotate it</p>` : ''}
+                    ${formHTML}
+                </div></details>`;
+        }
+
+        function toggleDone(idx) {
+            const k = `${currentDay}_ex_${idx}_done`;
+            setProfileData(k, !getProfileData(k, false));
+            renderWorkout();
+        }
+
+        function clearDone() {
+            getActiveWorkoutList().forEach((_, i) => setProfileData(`${currentDay}_ex_${i}_done`, false));
+            renderWorkout();
+        }
+
+        function changeAnim(v) { setProfileData('anim', v); renderWorkout(); }
+
         function saveExerciseData(idx, type, val) {
-            const dayKey = getCurrentDayKey();
-            const currentVal = getProfileData(`${dayKey}_ex_${idx}_${type}`, '');
+            const currentVal = getProfileData(`${currentDay}_ex_${idx}_${type}`, '');
             if(currentVal !== '' && currentVal !== val) {
-                setProfileData(`${dayKey}_ex_${idx}_prev_${type}`, currentVal);
+                setProfileData(`${currentDay}_ex_${idx}_prev_${type}`, currentVal);
             }
 
-            setProfileData(`${dayKey}_ex_${idx}_${type}`, val);
+            setProfileData(`${currentDay}_ex_${idx}_${type}`, val);
             renderWorkout();
 
             const autoTimerSetting = getProfileData('autotimer', '60');
@@ -677,7 +926,6 @@
         function closeExerciseModal() { document.getElementById('exerciseModal').classList.add('hidden'); }
 
         function saveModalExercise() {
-            const dayKey = getCurrentDayKey();
             let list = [...getActiveWorkoutList()];
             const name = document.getElementById('modal-ex-name').value.trim() || "Custom Exercise";
             const sets = document.getElementById('modal-ex-sets').value.trim() || "3";
@@ -691,33 +939,26 @@
                 list.push({ name, sets, reps, cues, gif });
             }
 
-            setProfileData(`workout_${dayKey}`, list);
+            setProfileData(`workout_${currentDay}`, list);
             closeExerciseModal();
             renderWorkout();
         }
 
         function deleteModalExercise() {
             if(confirm("Are you sure you want to remove this exercise from your routine?")) {
-                const dayKey = getCurrentDayKey();
                 let list = [...getActiveWorkoutList()];
                 list.splice(editModalIndex, 1);
-                setProfileData(`workout_${dayKey}`, list);
+                setProfileData(`workout_${currentDay}`, list);
                 closeExerciseModal();
                 renderWorkout();
             }
         }
 
         function resetRoutineToDefault() {
-            if(confirm("Reset all days and custom routines back to default preset?")) {
-                Object.keys(localStorage).forEach(key => {
-                    if(key.startsWith(`jm_${activeProfile}_workout_`) || key === `jm_${activeProfile}_custom_day_names`) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                activeDayIndex = 0;
-                renderDaySelector();
+            if(confirm(`Reset routine "${currentDay}" back to default preset?`)) {
+                localStorage.removeItem(`jm_${activeProfile}_workout_${currentDay}`);
                 renderWorkout();
-                alert("All routines reset to default.");
+                alert(`Routine ${currentDay} reset to default.`);
             }
         }
 
