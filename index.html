@@ -86,13 +86,17 @@
                 </div>
             </div>
 
+            <!-- Workout Day Action Header (Add Exercise) -->
+            <div class="flex justify-between items-center px-1">
+                <span id="current-routine-title" class="text-xs font-bold uppercase tracking-wider text-gray-400 font-mono">Push A Routine</span>
+                <button onclick="openAddExerciseModal()" class="bg-neutral-900 hover:bg-neutral-800 border border-custom text-xs text-gray-200 px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus text-[10px]"></i> Add Exercise to Routine
+                </button>
+            </div>
+
             <div id="workout-container" class="space-y-3">
                 <!-- Exercises injected dynamically -->
             </div>
-
-            <button onclick="openAddExerciseModal()" class="w-full py-2.5 bg-neutral-900 border border-custom hover:bg-neutral-800 text-xs font-bold text-gray-300 rounded-xl transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-plus"></i> Add Custom Exercise
-            </button>
         </section>
 
         <!-- MACROS & NUTRITION TAB -->
@@ -229,6 +233,12 @@
                         <option value="off">Off (Manual Timer Only)</option>
                     </select>
                 </div>
+
+                <div class="pt-3 border-t border-custom">
+                    <button onclick="resetRoutineToDefault()" class="w-full py-2 bg-neutral-900 border border-custom text-xs text-red-400 rounded-lg hover:bg-neutral-800 transition">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Active Routine to Defaults
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -340,11 +350,18 @@
                     <label class="text-xs text-gray-400 block mb-1">Form Cues / Notes</label>
                     <input type="text" id="modal-ex-cues" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none">
                 </div>
+                <div>
+                    <label class="text-xs text-gray-400 block mb-1">Image / GIF URL</label>
+                    <input type="text" id="modal-ex-gif" placeholder="https://..." class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-1.5 text-xs text-white focus:outline-none">
+                </div>
             </div>
 
-            <div class="flex justify-end gap-2 pt-2 border-t border-custom">
-                <button onclick="closeExerciseModal()" class="px-3 py-1.5 bg-neutral-900 border border-custom text-xs rounded text-gray-300">Cancel</button>
-                <button onclick="saveModalExercise()" class="px-3 py-1.5 bg-white text-black font-bold text-xs rounded">Save Exercise</button>
+            <div class="flex justify-between items-center pt-2 border-t border-custom">
+                <button id="modal-delete-btn" onclick="deleteModalExercise()" class="text-xs text-red-400 hover:underline hidden"><i class="fa-solid fa-trash mr-1"></i> Delete Exercise</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeExerciseModal()" class="px-3 py-1.5 bg-neutral-900 border border-custom text-xs rounded text-gray-300">Cancel</button>
+                    <button onclick="saveModalExercise()" class="px-3 py-1.5 bg-white text-black font-bold text-xs rounded">Save</button>
+                </div>
             </div>
         </div>
     </div>
@@ -499,6 +516,7 @@
 
         function selectDay(day) {
             currentDay = day;
+            document.getElementById('current-routine-title').innerText = `${day} Routine`;
             document.querySelectorAll('.day-btn').forEach(btn => {
                 if(btn.dataset.day === day) {
                     btn.className = "day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition";
@@ -524,7 +542,7 @@
             document.getElementById('difficulty-select').value = diff;
             const customList = getProfileData(`workout_${currentDay}`, null);
             if(customList) return customList;
-            return (presetWorkouts[diff] || presetWorkouts.beginner)[currentDay] || [];
+            return JSON.parse(JSON.stringify((presetWorkouts[diff] || presetWorkouts.beginner)[currentDay] || []));
         }
 
         function renderWorkout() {
@@ -553,7 +571,7 @@
                                     <span class="text-[10px] font-mono text-gray-500 uppercase">Exercise #${idx+1}</span>
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-[10px] bg-neutral-900 border border-custom text-gray-300 px-2 py-0.5 rounded font-mono">${ex.sets} Sets × ${ex.reps}</span>
-                                        <button onclick="openEditExerciseModal(${idx})" class="text-gray-500 hover:text-white text-xs p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button onclick="openEditExerciseModal(${idx})" class="text-gray-400 hover:text-white text-xs p-1" title="Edit Exercise"><i class="fa-solid fa-pen-to-square"></i></button>
                                     </div>
                                 </div>
                                 <h4 class="text-sm font-bold text-white truncate">${ex.name}</h4>
@@ -603,6 +621,8 @@
             document.getElementById('modal-ex-sets').value = ex.sets;
             document.getElementById('modal-ex-reps').value = ex.reps;
             document.getElementById('modal-ex-cues').value = ex.cues;
+            document.getElementById('modal-ex-gif').value = ex.gif || '';
+            document.getElementById('modal-delete-btn').classList.remove('hidden');
             document.getElementById('exerciseModal').classList.remove('hidden');
         }
 
@@ -613,6 +633,8 @@
             document.getElementById('modal-ex-sets').value = "3";
             document.getElementById('modal-ex-reps').value = "10-12";
             document.getElementById('modal-ex-cues').value = "";
+            document.getElementById('modal-ex-gif').value = "";
+            document.getElementById('modal-delete-btn').classList.add('hidden');
             document.getElementById('exerciseModal').classList.remove('hidden');
         }
 
@@ -624,16 +646,35 @@
             const sets = document.getElementById('modal-ex-sets').value.trim() || "3";
             const reps = document.getElementById('modal-ex-reps').value.trim() || "10-12";
             const cues = document.getElementById('modal-ex-cues').value.trim() || "Focus on form.";
+            const gif = document.getElementById('modal-ex-gif').value.trim() || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80";
 
             if(editModalIndex !== null) {
-                list[editModalIndex] = { name, sets, reps, cues, gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" };
+                list[editModalIndex] = { name, sets, reps, cues, gif };
             } else {
-                list.push({ name, sets, reps, cues, gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" });
+                list.push({ name, sets, reps, cues, gif });
             }
 
             setProfileData(`workout_${currentDay}`, list);
             closeExerciseModal();
             renderWorkout();
+        }
+
+        function deleteModalExercise() {
+            if(confirm("Are you sure you want to remove this exercise from your routine?")) {
+                let list = [...getActiveWorkoutList()];
+                list.splice(editModalIndex, 1);
+                setProfileData(`workout_${currentDay}`, list);
+                closeExerciseModal();
+                renderWorkout();
+            }
+        }
+
+        function resetRoutineToDefault() {
+            if(confirm(`Reset routine "${currentDay}" back to default preset?`)) {
+                localStorage.removeItem(`jm_${activeProfile}_workout_${currentDay}`);
+                renderWorkout();
+                alert(`Routine ${currentDay} reset to default.`);
+            }
         }
 
         // Hydration Logic
