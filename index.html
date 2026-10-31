@@ -249,7 +249,7 @@
                 </select>
             </div>
 
-            <!-- User Stats Editor (Height, Current Weight, Goal Weight, Age, Gender) -->
+            <!-- User Stats Editor -->
             <div class="space-y-3 pt-3 border-t border-custom">
                 <div class="flex justify-between items-center">
                     <span class="text-xs font-bold text-gray-300 uppercase tracking-wider">Edit Profile Stats</span>
@@ -353,40 +353,40 @@
         const presetWorkouts = {
             beginner: {
                 "Push A": [
-                    { name: "Seated Machine Chest Press", sets: "3", reps: "10-12", cues: "Keep back flat against pad. Smooth controlled push." },
-                    { name: "Incline Dumbbell Press (Light)", sets: "3", reps: "10-12", cues: "Focus on chest stretch at bottom." },
-                    { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Control weight on negative descent." },
-                    { name: "Triceps Rope Pushdowns", sets: "3", reps: "12-15", cues: "Lock elbows to side, flare rope at bottom." }
+                    { name: "Seated Machine Chest Press", sets: "3", reps: "10-12", cues: "Keep back flat against pad. Smooth controlled push.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Incline Dumbbell Press (Light)", sets: "3", reps: "10-12", cues: "Focus on chest stretch at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Control weight on negative descent.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Triceps Rope Pushdowns", sets: "3", reps: "12-15", cues: "Lock elbows to side, flare rope at bottom.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
                 ],
                 "Pull A": [
-                    { name: "Lat Pulldown (Neutral Grip)", sets: "3", reps: "10-12", cues: "Pull bar down toward upper chest." },
-                    { name: "Seated Cable Row", sets: "3", reps: "10-12", cues: "Squeeze shoulder blades together at torso." },
-                    { name: "Cable Face Pulls", sets: "3", reps: "15-20", cues: "Pull toward forehead for posture." },
-                    { name: "Dumbbell Hammer Curls", sets: "3", reps: "12-15", cues: "Keep wrists neutral facing each other." }
+                    { name: "Lat Pulldown (Neutral Grip)", sets: "3", reps: "10-12", cues: "Pull bar down toward upper chest.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Seated Cable Row", sets: "3", reps: "10-12", cues: "Squeeze shoulder blades together at torso.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Cable Face Pulls", sets: "3", reps: "15-20", cues: "Pull toward forehead for posture.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Dumbbell Hammer Curls", sets: "3", reps: "12-15", cues: "Keep wrists neutral facing each other.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
                 ],
                 "Legs A": [
-                    { name: "Leg Press Machine", sets: "3", reps: "10-12", cues: "Feet high on plate for glute/hamstring focus." },
-                    { name: "Dumbbell Goblet Squats", sets: "3", reps: "10-12", cues: "Hold weight close to chest, sit deep." },
-                    { name: "Lying Leg Curls", sets: "3", reps: "12-15", cues: "Keep hips pressed flat into pad." },
-                    { name: "Standing Calf Raises", sets: "3", reps: "15-20", cues: "Hold peak squeeze for 1 second." }
+                    { name: "Leg Press Machine", sets: "3", reps: "10-12", cues: "Feet high on plate for glute/hamstring focus.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Dumbbell Goblet Squats", sets: "3", reps: "10-12", cues: "Hold weight close to chest, sit deep.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Lying Leg Curls", sets: "3", reps: "12-15", cues: "Keep hips pressed flat into pad.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Standing Calf Raises", sets: "3", reps: "15-20", cues: "Hold peak squeeze for 1 second.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" }
                 ],
                 "Push B": [
-                    { name: "Seated Dumbbell Shoulder Press", sets: "3", reps: "10-12", cues: "Keep core braced, press overhead." },
-                    { name: "Pec Deck Chest Flyes", sets: "3", reps: "12-15", cues: "Slight bend in elbows throughout motion." },
-                    { name: "Incline Bench Lateral Raises", sets: "3", reps: "12-15", cues: "Chest flat on bench to isolate side delts." },
-                    { name: "Overhead Cable Extension", sets: "3", reps: "12-15", cues: "Keep elbows pointed forward framing head." }
+                    { name: "Seated Dumbbell Shoulder Press", sets: "3", reps: "10-12", cues: "Keep core braced, press overhead.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Pec Deck Chest Flyes", sets: "3", reps: "12-15", cues: "Slight bend in elbows throughout motion.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Incline Bench Lateral Raises", sets: "3", reps: "12-15", cues: "Chest flat on bench to isolate side delts.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Overhead Cable Extension", sets: "3", reps: "12-15", cues: "Keep elbows pointed forward framing head.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
                 ],
                 "Pull B": [
-                    { name: "Chest-Supported Row Machine", sets: "3", reps: "10-12", cues: "Drive elbows back toward hips." },
-                    { name: "Straight-Arm Cable Pulldown", sets: "3", reps: "12-15", cues: "Sweep bar down toward thighs." },
-                    { name: "Reverse Pec Deck (Rear Delts)", sets: "3", reps: "15-20", cues: "Keep arms parallel to ground." },
-                    { name: "Incline Dumbbell Biceps Curls", sets: "3", reps: "12-15", cues: "Full arm extension at bottom." }
+                    { name: "Chest-Supported Row Machine", sets: "3", reps: "10-12", cues: "Drive elbows back toward hips.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Straight-Arm Cable Pulldown", sets: "3", reps: "12-15", cues: "Sweep bar down toward thighs.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Reverse Pec Deck (Rear Delts)", sets: "3", reps: "15-20", cues: "Keep arms parallel to ground.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Incline Dumbbell Biceps Curls", sets: "3", reps: "12-15", cues: "Full arm extension at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
                 ],
                 "Legs B": [
-                    { name: "Glute Hyper-Extension (Roman Chair)", sets: "3", reps: "12-15", cues: "Squeeze glutes hard at full extension." },
-                    { name: "Leg Extension Machine", sets: "3", reps: "12-15", cues: "Controlled extension without swinging weight." },
-                    { name: "Seated Leg Curls", sets: "3", reps: "12-15", cues: "Focus on hamstring contraction." },
-                    { name: "Cable Pallof Press", sets: "3", reps: "12 / side", cues: "Hold center for core stability." }
+                    { name: "Glute Hyper-Extension (Roman Chair)", sets: "3", reps: "12-15", cues: "Squeeze glutes hard at full extension.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Leg Extension Machine", sets: "3", reps: "12-15", cues: "Controlled extension without swinging weight.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Seated Leg Curls", sets: "3", reps: "12-15", cues: "Focus on hamstring contraction.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                    { name: "Cable Pallof Press", sets: "3", reps: "12 / side", cues: "Hold center for core stability.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" }
                 ]
             }
         };
@@ -428,7 +428,6 @@
             document.getElementById('stat-age').value = stats.age;
             document.getElementById('stat-gender').value = stats.gender;
 
-            // Height conversion display
             const feet = Math.floor((stats.height / 2.54) / 12);
             const inches = Math.round((stats.height / 2.54) % 12);
             const goalText = stats.goalweight ? ` ➔ Goal: ${stats.goalweight}kg` : '';
@@ -543,22 +542,26 @@
                 if(savedWeight !== '' || savedReps !== '') completedCount++;
 
                 const prevDisplay = (prevWeight || prevReps) ? `Last: ${prevWeight || '0'}kg × ${prevReps || '0'} reps` : 'No previous log';
+                const gifUrl = ex.gif || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80';
 
                 html += `
                     <div class="bg-card border border-custom rounded-xl p-3.5 space-y-2.5">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <span class="text-[10px] font-mono text-gray-500 uppercase">Exercise #${idx+1}</span>
-                                <h4 class="text-sm font-bold text-white">${ex.name}</h4>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-[10px] bg-neutral-900 border border-custom text-gray-300 px-2 py-0.5 rounded font-mono">${ex.sets} Sets × ${ex.reps}</span>
-                                <button onclick="openEditExerciseModal(${idx})" class="text-gray-500 hover:text-white text-xs p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <div class="flex gap-3 items-center">
+                            <img src="${gifUrl}" alt="${ex.name}" class="w-12 h-12 rounded-lg object-cover border border-custom shrink-0">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-[10px] font-mono text-gray-500 uppercase">Exercise #${idx+1}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[10px] bg-neutral-900 border border-custom text-gray-300 px-2 py-0.5 rounded font-mono">${ex.sets} Sets × ${ex.reps}</span>
+                                        <button onclick="openEditExerciseModal(${idx})" class="text-gray-500 hover:text-white text-xs p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    </div>
+                                </div>
+                                <h4 class="text-sm font-bold text-white truncate">${ex.name}</h4>
                             </div>
                         </div>
                         <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono bg-black p-1.5 rounded border border-custom">
                             <span><i class="fa-solid fa-clock-rotate-left mr-1"></i> ${prevDisplay}</span>
-                            <span class="text-gray-500 italic">${ex.cues}</span>
+                            <span class="text-gray-500 italic truncate max-w-[150px]">${ex.cues}</span>
                         </div>
                         <div class="flex gap-2 pt-1">
                             <input type="text" placeholder="Weight (kg)" value="${savedWeight}" onchange="saveExerciseData(${idx}, 'w', this.value)" class="w-1/2 bg-black border border-custom rounded px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-white font-mono">
@@ -623,9 +626,9 @@
             const cues = document.getElementById('modal-ex-cues').value.trim() || "Focus on form.";
 
             if(editModalIndex !== null) {
-                list[editModalIndex] = { name, sets, reps, cues };
+                list[editModalIndex] = { name, sets, reps, cues, gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" };
             } else {
-                list.push({ name, sets, reps, cues });
+                list.push({ name, sets, reps, cues, gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" });
             }
 
             setProfileData(`workout_${currentDay}`, list);
@@ -653,25 +656,21 @@
             updateWaterUI();
         }
 
-        // Dynamic TDEE / Macro Calculator based on User Stats & Goal Weight
+        // Dynamic TDEE / Macro Calculator
         function calculateTargets() {
             const stats = getProfileData('user_stats', { height: 157, weight: 56, goalweight: 54, age: 22, gender: 'female' });
             
-            // Mifflin-St Jeor BMR
             let bmr = (10 * stats.weight) + (6.25 * stats.height) - (5 * stats.age);
             bmr += (stats.gender === 'female') ? -161 : 5;
 
-            // Activity Multiplier for 6-day split (1.45)
             let tdee = Math.round(bmr * 1.45);
             
-            // Calorie adjustments based on Goal Weight vs Current Weight
             if(stats.goalweight < stats.weight) {
-                tdee -= 250; // Mild calorie deficit for weight loss
+                tdee -= 250;
             } else if(stats.goalweight > stats.weight) {
-                tdee += 250; // Mild calorie surplus for weight gain/muscle building
+                tdee += 250;
             }
 
-            // Macro split using target/goal weight
             const targetWeight = stats.goalweight || stats.weight;
             const proGrams = Math.round(targetWeight * 2.0);
             const fatGrams = Math.round(targetWeight * 0.9);
@@ -680,7 +679,6 @@
             return { cal: tdee, pro: proGrams, carb: carbGrams, fat: fatGrams };
         }
 
-        // Nutrition UI
         function updateNutritionUI() {
             const consumed = getProfileData('nutrition', { cal: 0, pro: 0, carb: 0, fat: 0 });
             const targets = calculateTargets();
@@ -720,7 +718,6 @@
             updateNutritionUI();
         }
 
-        // Export/Import JSON Data
         function exportProfileData() {
             let exportObj = {};
             Object.keys(localStorage).forEach(key => {
@@ -732,6 +729,7 @@
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
             downloadAnchor.setAttribute("download", `JasonMode_${activeProfile}_Backup.json`);
+            document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
@@ -755,7 +753,6 @@
             fileReader.readAsText(event.target.files[0]);
         }
 
-        // Rest Timer
         let timerInterval = null;
         function startRest(seconds) {
             clearInterval(timerInterval);
@@ -778,7 +775,6 @@
             document.getElementById('rest-timer-display').innerText = "00:00";
         }
 
-        // PWA Install Prompt
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
