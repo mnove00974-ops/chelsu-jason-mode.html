@@ -61,17 +61,12 @@
             <!-- Day Selection & Progress -->
             <div class="bg-card border border-custom rounded-xl p-4 space-y-3">
                 <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-400 uppercase font-mono tracking-wider">Select Training Day</span>
+                    <span class="text-gray-400 uppercase font-mono tracking-wider">Select Training Split Slot</span>
                     <span id="difficulty-badge" class="bg-neutral-800 text-gray-300 px-2 py-0.5 rounded text-[10px] uppercase font-mono">Beginner</span>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="selectDay('Push A')" class="day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition" data-day="Push A">Push A</button>
-                    <button onclick="selectDay('Pull A')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Pull A">Pull A</button>
-                    <button onclick="selectDay('Legs A')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Legs A">Legs A</button>
-                    <button onclick="selectDay('Push B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Push B">Push B</button>
-                    <button onclick="selectDay('Pull B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Pull B">Pull B</button>
-                    <button onclick="selectDay('Legs B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Legs B">Legs B</button>
+                <div id="day-selector-container" class="grid grid-cols-3 gap-2">
+                    <!-- Dynamic Day Slots -->
                 </div>
 
                 <!-- Daily Workout Completion Progress Bar -->
@@ -86,12 +81,17 @@
                 </div>
             </div>
 
-            <!-- Workout Day Action Header (Add Exercise) -->
-            <div class="flex justify-between items-center px-1">
-                <span id="current-routine-title" class="text-xs font-bold uppercase tracking-wider text-gray-400 font-mono">Push A Routine</span>
-                <button onclick="openAddExerciseModal()" class="bg-neutral-900 hover:bg-neutral-800 border border-custom text-xs text-gray-200 px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5">
-                    <i class="fa-solid fa-plus text-[10px]"></i> Add Exercise to Routine
-                </button>
+            <!-- Workout Day Action Header (Rename Day & Add Exercise) -->
+            <div class="flex justify-between items-center px-1 gap-2">
+                <div class="flex items-center gap-1.5">
+                    <input type="text" id="active-day-title-input" onchange="renameActiveDay(this.value)" class="bg-neutral-950 border border-custom rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-white font-mono w-32 focus:outline-none focus:border-white" title="Click to rename day">
+                    <span class="text-[10px] text-gray-500 font-mono">(Click to Rename)</span>
+                </div>
+                <div class="flex gap-1.5">
+                    <button onclick="openAddExerciseModal()" class="bg-neutral-900 hover:bg-neutral-800 border border-custom text-xs text-gray-200 px-2.5 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
+                        <i class="fa-solid fa-plus text-[10px]"></i> Add Ex
+                    </button>
+                </div>
             </div>
 
             <div id="workout-container" class="space-y-3">
@@ -236,7 +236,7 @@
 
                 <div class="pt-3 border-t border-custom">
                     <button onclick="resetRoutineToDefault()" class="w-full py-2 bg-neutral-900 border border-custom text-xs text-red-400 rounded-lg hover:bg-neutral-800 transition">
-                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset Active Routine to Defaults
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Reset All Routines to Defaults
                     </button>
                 </div>
             </div>
@@ -367,50 +367,49 @@
     </div>
 
     <script>
-        const presetWorkouts = {
-            beginner: {
-                "Push A": [
-                    { name: "Seated Machine Chest Press", sets: "3", reps: "10-12", cues: "Keep back flat against pad. Smooth controlled push.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Incline Dumbbell Press (Light)", sets: "3", reps: "10-12", cues: "Focus on chest stretch at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Control weight on negative descent.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Triceps Rope Pushdowns", sets: "3", reps: "12-15", cues: "Lock elbows to side, flare rope at bottom.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
-                ],
-                "Pull A": [
-                    { name: "Lat Pulldown (Neutral Grip)", sets: "3", reps: "10-12", cues: "Pull bar down toward upper chest.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Seated Cable Row", sets: "3", reps: "10-12", cues: "Squeeze shoulder blades together at torso.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Cable Face Pulls", sets: "3", reps: "15-20", cues: "Pull toward forehead for posture.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Dumbbell Hammer Curls", sets: "3", reps: "12-15", cues: "Keep wrists neutral facing each other.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
-                ],
-                "Legs A": [
-                    { name: "Leg Press Machine", sets: "3", reps: "10-12", cues: "Feet high on plate for glute/hamstring focus.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Dumbbell Goblet Squats", sets: "3", reps: "10-12", cues: "Hold weight close to chest, sit deep.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Lying Leg Curls", sets: "3", reps: "12-15", cues: "Keep hips pressed flat into pad.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Standing Calf Raises", sets: "3", reps: "15-20", cues: "Hold peak squeeze for 1 second.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" }
-                ],
-                "Push B": [
-                    { name: "Seated Dumbbell Shoulder Press", sets: "3", reps: "10-12", cues: "Keep core braced, press overhead.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Pec Deck Chest Flyes", sets: "3", reps: "12-15", cues: "Slight bend in elbows throughout motion.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Incline Bench Lateral Raises", sets: "3", reps: "12-15", cues: "Chest flat on bench to isolate side delts.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Overhead Cable Extension", sets: "3", reps: "12-15", cues: "Keep elbows pointed forward framing head.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
-                ],
-                "Pull B": [
-                    { name: "Chest-Supported Row Machine", sets: "3", reps: "10-12", cues: "Drive elbows back toward hips.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Straight-Arm Cable Pulldown", sets: "3", reps: "12-15", cues: "Sweep bar down toward thighs.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Reverse Pec Deck (Rear Delts)", sets: "3", reps: "15-20", cues: "Keep arms parallel to ground.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Incline Dumbbell Biceps Curls", sets: "3", reps: "12-15", cues: "Full arm extension at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
-                ],
-                "Legs B": [
-                    { name: "Glute Hyper-Extension (Roman Chair)", sets: "3", reps: "12-15", cues: "Squeeze glutes hard at full extension.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Leg Extension Machine", sets: "3", reps: "12-15", cues: "Controlled extension without swinging weight.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Seated Leg Curls", sets: "3", reps: "12-15", cues: "Focus on hamstring contraction.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
-                    { name: "Cable Pallof Press", sets: "3", reps: "12 / side", cues: "Hold center for core stability.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" }
-                ]
-            }
+        const defaultWorkouts = {
+            "Push A": [
+                { name: "Seated Machine Chest Press", sets: "3", reps: "10-12", cues: "Keep back flat against pad. Smooth controlled push.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Incline Dumbbell Press", sets: "3", reps: "10-12", cues: "Focus on upper chest stretch at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Shoulder shaping: control weight on descent.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                { name: "Triceps Rope Pushdowns", sets: "3", reps: "12-15", cues: "Lock elbows to side, flare rope at bottom.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
+            ],
+            "Pull A": [
+                { name: "Lat Pulldown (Neutral Grip)", sets: "3", reps: "10-12", cues: "Pull bar down toward upper chest for back width.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                { name: "Seated Cable Row", sets: "3", reps: "10-12", cues: "Squeeze shoulder blades for posture.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Cable Face Pulls", sets: "3", reps: "15-20", cues: "Rear delt and posture focus.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                { name: "Dumbbell Hammer Curls", sets: "3", reps: "12-15", cues: "Controlled arm shaping.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
+            ],
+            "Legs A": [
+                { name: "Leg Press (High & Wide Stance)", sets: "3", reps: "10-12", cues: "Glute and hamstring focus.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Dumbbell Romanian Deadlifts", sets: "3", reps: "10-12", cues: "Hinge hips back for glutes & hamstrings.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
+                { name: "Lying Leg Curls", sets: "3", reps: "12-15", cues: "Keep hips glued to pad.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Standing Calf Raises", sets: "3", reps: "15-20", cues: "Hold peak squeeze for 1 second.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" }
+            ],
+            "Push B": [
+                { name: "Seated Dumbbell Shoulder Press", sets: "3", reps: "10-12", cues: "Brace core, press overhead.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                { name: "Pec Deck Chest Flyes", sets: "3", reps: "12-15", cues: "Slight bend in elbows throughout.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Cable Lateral Raises", sets: "3", reps: "12-15", cues: "Side delt isolation.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                { name: "Overhead Cable Extension", sets: "3", reps: "12-15", cues: "Triceps stretch overhead.", gif: "https://images.unsplash.com/photo-1530822847156-5df6886e9b44?w=300&auto=format&fit=crop&q=80" }
+            ],
+            "Pull B": [
+                { name: "Chest-Supported Row Machine", sets: "3", reps: "10-12", cues: "Drive elbows back toward hips.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Straight-Arm Cable Pulldown", sets: "3", reps: "12-15", cues: "Isolate lats.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" },
+                { name: "Reverse Pec Deck", sets: "3", reps: "15-20", cues: "Rear delts and upper back.", gif: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=300&auto=format&fit=crop&q=80" },
+                { name: "Incline Dumbbell Biceps Curls", sets: "3", reps: "12-15", cues: "Full stretch at bottom.", gif: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=300&auto=format&fit=crop&q=80" }
+            ],
+            "Legs B": [
+                { name: "Barbell / Smith Hip Thrusts", sets: "4", reps: "10-12", cues: "Ultimate glute shaping exercise.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" },
+                { name: "Bulgarian Split Squats", sets: "3", reps: "10 / leg", cues: "Deep stretch for glutes and quads.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Seated Leg Extensions", sets: "3", reps: "12-15", cues: "Quad isolation.", gif: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&auto=format&fit=crop&q=80" },
+                { name: "Cable Pull-Throughs", sets: "3", reps: "15", cues: "Glute hinge movement.", gif: "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=300&auto=format&fit=crop&q=80" }
+            ]
         };
 
         let profiles = JSON.parse(localStorage.getItem('jm_profiles')) || ['Default Profile'];
         let activeProfile = localStorage.getItem('jm_active_profile') || 'Default Profile';
-        let currentDay = "Push A";
+        let defaultDayKeys = Object.keys(defaultWorkouts);
+        let activeDayIndex = 0;
         let editModalIndex = null;
 
         function getProfileData(key, fallback) {
@@ -422,10 +421,15 @@
             localStorage.setItem(`jm_${activeProfile}_${key}`, JSON.stringify(value));
         }
 
+        function getDayNames() {
+            return getProfileData('custom_day_names', [...defaultDayKeys]);
+        }
+
         function initApp() {
             document.getElementById('current-user-display').innerText = `User: ${activeProfile}`;
             renderProfileDropdown();
             loadUserStatsForm();
+            renderDaySelector();
             renderWorkout();
             updateNutritionUI();
             updateWaterUI();
@@ -487,6 +491,7 @@
         function switchProfile(name) {
             activeProfile = name;
             localStorage.setItem('jm_active_profile', activeProfile);
+            activeDayIndex = 0;
             initApp();
         }
 
@@ -514,16 +519,45 @@
             activeBtn.classList.remove('hover:text-white');
         }
 
-        function selectDay(day) {
-            currentDay = day;
-            document.getElementById('current-routine-title').innerText = `${day} Routine`;
-            document.querySelectorAll('.day-btn').forEach(btn => {
-                if(btn.dataset.day === day) {
-                    btn.className = "day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition";
-                } else {
-                    btn.className = "day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition";
-                }
+        function renderDaySelector() {
+            const dayNames = getDayNames();
+            const container = document.getElementById('day-selector-container');
+            let html = '';
+            dayNames.forEach((name, idx) => {
+                const isActive = idx === activeDayIndex;
+                const btnClass = isActive ? "day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition truncate px-1" : "day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition truncate px-1";
+                html += `<button onclick="selectDayIndex(${idx})" class="${btnClass}" title="${name}">${name}</button>`;
             });
+            container.innerHTML = html;
+        }
+
+        function selectDayIndex(idx) {
+            activeDayIndex = idx;
+            renderDaySelector();
+            renderWorkout();
+        }
+
+        function getCurrentDayKey() {
+            const dayNames = getDayNames();
+            return dayNames[activeDayIndex] || defaultDayKeys[activeDayIndex];
+        }
+
+        function renameActiveDay(newName) {
+            const cleanName = newName.trim();
+            if(!cleanName) return;
+            let dayNames = getDayNames();
+            const oldKey = dayNames[activeDayIndex];
+            dayNames[activeDayIndex] = cleanName;
+            setProfileData('custom_day_names', dayNames);
+
+            // Migrate saved workout data to new key
+            const oldWorkout = localStorage.getItem(`jm_${activeProfile}_workout_${oldKey}`);
+            if(oldWorkout) {
+                localStorage.setItem(`jm_${activeProfile}_workout_${cleanName}`, oldWorkout);
+                localStorage.removeItem(`jm_${activeProfile}_workout_${oldKey}`);
+            }
+
+            renderDaySelector();
             renderWorkout();
         }
 
@@ -537,25 +571,26 @@
         }
 
         function getActiveWorkoutList() {
-            const diff = getProfileData('difficulty', 'beginner');
-            document.getElementById('difficulty-badge').innerText = diff;
-            document.getElementById('difficulty-select').value = diff;
-            const customList = getProfileData(`workout_${currentDay}`, null);
+            const dayKey = getCurrentDayKey();
+            const customList = getProfileData(`workout_${dayKey}`, null);
             if(customList) return customList;
-            return JSON.parse(JSON.stringify((presetWorkouts[diff] || presetWorkouts.beginner)[currentDay] || []));
+            return JSON.parse(JSON.stringify(defaultWorkouts[dayKey] || defaultWorkouts["Push A"]));
         }
 
         function renderWorkout() {
+            const dayKey = getCurrentDayKey();
+            document.getElementById('active-day-title-input').value = dayKey;
+
             const container = document.getElementById('workout-container');
             const list = getActiveWorkoutList();
             let completedCount = 0;
 
             let html = '';
             list.forEach((ex, idx) => {
-                const savedWeight = getProfileData(`${currentDay}_ex_${idx}_w`, '');
-                const savedReps = getProfileData(`${currentDay}_ex_${idx}_r`, '');
-                const prevWeight = getProfileData(`${currentDay}_ex_${idx}_prev_w`, '');
-                const prevReps = getProfileData(`${currentDay}_ex_${idx}_prev_r`, '');
+                const savedWeight = getProfileData(`${dayKey}_ex_${idx}_w`, '');
+                const savedReps = getProfileData(`${dayKey}_ex_${idx}_r`, '');
+                const prevWeight = getProfileData(`${dayKey}_ex_${idx}_prev_w`, '');
+                const prevReps = getProfileData(`${dayKey}_ex_${idx}_prev_r`, '');
 
                 if(savedWeight !== '' || savedReps !== '') completedCount++;
 
@@ -598,12 +633,13 @@
         }
 
         function saveExerciseData(idx, type, val) {
-            const currentVal = getProfileData(`${currentDay}_ex_${idx}_${type}`, '');
+            const dayKey = getCurrentDayKey();
+            const currentVal = getProfileData(`${dayKey}_ex_${idx}_${type}`, '');
             if(currentVal !== '' && currentVal !== val) {
-                setProfileData(`${currentDay}_ex_${idx}_prev_${type}`, currentVal);
+                setProfileData(`${dayKey}_ex_${idx}_prev_${type}`, currentVal);
             }
 
-            setProfileData(`${currentDay}_ex_${idx}_${type}`, val);
+            setProfileData(`${dayKey}_ex_${idx}_${type}`, val);
             renderWorkout();
 
             const autoTimerSetting = getProfileData('autotimer', '60');
@@ -641,6 +677,7 @@
         function closeExerciseModal() { document.getElementById('exerciseModal').classList.add('hidden'); }
 
         function saveModalExercise() {
+            const dayKey = getCurrentDayKey();
             let list = [...getActiveWorkoutList()];
             const name = document.getElementById('modal-ex-name').value.trim() || "Custom Exercise";
             const sets = document.getElementById('modal-ex-sets').value.trim() || "3";
@@ -654,26 +691,33 @@
                 list.push({ name, sets, reps, cues, gif });
             }
 
-            setProfileData(`workout_${currentDay}`, list);
+            setProfileData(`workout_${dayKey}`, list);
             closeExerciseModal();
             renderWorkout();
         }
 
         function deleteModalExercise() {
             if(confirm("Are you sure you want to remove this exercise from your routine?")) {
+                const dayKey = getCurrentDayKey();
                 let list = [...getActiveWorkoutList()];
                 list.splice(editModalIndex, 1);
-                setProfileData(`workout_${currentDay}`, list);
+                setProfileData(`workout_${dayKey}`, list);
                 closeExerciseModal();
                 renderWorkout();
             }
         }
 
         function resetRoutineToDefault() {
-            if(confirm(`Reset routine "${currentDay}" back to default preset?`)) {
-                localStorage.removeItem(`jm_${activeProfile}_workout_${currentDay}`);
+            if(confirm("Reset all days and custom routines back to default preset?")) {
+                Object.keys(localStorage).forEach(key => {
+                    if(key.startsWith(`jm_${activeProfile}_workout_`) || key === `jm_${activeProfile}_custom_day_names`) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                activeDayIndex = 0;
+                renderDaySelector();
                 renderWorkout();
-                alert(`Routine ${currentDay} reset to default.`);
+                alert("All routines reset to default.");
             }
         }
 
