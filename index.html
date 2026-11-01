@@ -50,6 +50,9 @@
         <button onclick="switchTab('timer')" id="nav-timer" class="tab-btn flex flex-col items-center py-1.5 px-3 rounded-lg hover:text-white transition">
             <i class="fa-solid fa-stopwatch text-sm mb-1"></i> Rest Timer
         </button>
+        <button onclick="switchTab('calendar')" id="nav-calendar" class="tab-btn flex flex-col items-center py-1.5 px-3 rounded-lg hover:text-white transition">
+            <i class="fa-solid fa-calendar-check text-sm mb-1"></i> Streak
+        </button>
         <button onclick="switchTab('guide')" id="nav-guide" class="tab-btn flex flex-col items-center py-1.5 px-3 rounded-lg hover:text-white transition">
             <i class="fa-solid fa-sliders text-sm mb-1"></i> Settings
         </button>
@@ -66,14 +69,8 @@
                     <span id="difficulty-badge" class="bg-neutral-800 text-gray-300 px-2 py-0.5 rounded text-[10px] uppercase font-mono">Beginner</span>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="selectDay('Push A')" class="day-btn bg-white text-black py-2 rounded-lg text-xs font-bold transition" data-day="Push A">Push A</button>
-                    <button onclick="selectDay('Pull A')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Pull A">Pull A</button>
-                    <button onclick="selectDay('Legs A')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Legs A">Legs A</button>
-                    <button onclick="selectDay('Push B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Push B">Push B</button>
-                    <button onclick="selectDay('Pull B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Pull B">Pull B</button>
-                    <button onclick="selectDay('Legs B')" class="day-btn bg-neutral-900 text-gray-300 border border-custom py-2 rounded-lg text-xs font-bold transition" data-day="Legs B">Legs B</button>
-                </div>
+                <div id="plan-banner" class="text-[11px] text-gray-400"></div>
+                <div id="day-grid" class="grid grid-cols-3 gap-2"></div>
 
                 <!-- Daily Workout Completion Progress Bar -->
                 <div class="pt-2 border-t border-custom space-y-1">
@@ -173,6 +170,15 @@
                     </div>
                 </div>
 
+                <!-- Food search -->
+                <div class="pt-3 border-t border-custom space-y-2">
+                    <span class="text-xs text-gray-400 block"><i class="fa-solid fa-magnifying-glass mr-1"></i> Search a food (macros fill in automatically)</span>
+                    <input id="food-q" oninput="foodSearchInput(this.value)" placeholder="e.g. chicken breast, banana, oats" class="w-full bg-neutral-950 border border-custom rounded px-2.5 py-2 text-base text-white focus:outline-none focus:border-white">
+                    <div id="food-results" class="space-y-1"></div>
+                    <div id="food-pick"></div>
+                    <div id="food-remaining" class="text-[11px] text-gray-400 font-mono"></div>
+                    <div id="food-log" class="space-y-1"></div>
+                </div>
                 <!-- Add Consumed Macros Input -->
                 <div class="pt-3 border-t border-custom space-y-2">
                     <span class="text-xs text-gray-400 block">Log Consumed Nutrition</span>
@@ -212,11 +218,15 @@
         </section>
 
         <!-- ROUTINE & APP SETTINGS TAB -->
+        <section id="tab-calendar" class="space-y-4 hidden"><div id="cal-body" class="space-y-4"></div></section>
+
         <section id="tab-guide" class="space-y-4 hidden">
             <div class="bg-card border border-custom rounded-xl p-4 space-y-3">
                 <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider"><i class="fa-solid fa-sliders mr-1"></i> Settings & Preferences</h3>
                 
                 <div class="space-y-2 pt-1">
+                    <div class="grid grid-cols-2 gap-2"><button onclick="openCoach(0)" class="py-2 bg-white text-black font-bold text-xs rounded-lg">Coach intake / new plan</button><button onclick="openCoach(2)" class="py-2 bg-neutral-900 border border-custom text-xs text-gray-200 rounded-lg">Adjust days, time, difficulty</button></div>
+                    <div id="coach-card"></div>
                     <label class="text-xs text-gray-400 block">Experience / Difficulty Level</label>
                     <select id="difficulty-select" onchange="changeDifficulty(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none focus:border-white">
                         <option value="beginner">Beginner (Guided Machines & Joint Safety Focus)</option>
@@ -231,15 +241,7 @@
                         <option value="60">Auto-Start 60 Seconds</option>
                         <option value="90">Auto-Start 90 Seconds</option>
                         <option value="120">Auto-Start 120 Seconds</option>
-                        <option value="off">Off (Manual Timer Only)</option>
-                    </select>
-                </div>
-
-                <div class="space-y-2 pt-2 border-t border-custom">
-                    <label class="text-xs text-gray-400 block">Exercise How-To Animations</label>
-                    <select id="anim-select" onchange="changeAnim(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none focus:border-white">
-                        <option value="on">Show how-to guides (start/end + animation)</option>
-                        <option value="off">Hide (checklist only)</option>
+                        <option value="off">Off (Manual Timer Only)</option></select></div><div class="space-y-2 pt-2 border-t border-custom"><label class="text-xs text-gray-400 block">Exercise How-To Animations</label><select id="anim-select" onchange="changeAnim(this.value)" class="w-full bg-neutral-950 border border-custom rounded-lg p-2 text-xs text-white focus:outline-none focus:border-white"><option value="on">Show how-to guides (start/end + animation)</option><option value="off">Hide (checklist only)</option>
                     </select>
                 </div>
 
@@ -331,6 +333,8 @@
             </div>
         </div>
     </div>
+
+    <div id="coachModal" class="fixed inset-0 bg-black/90 z-[60] flex items-start justify-center p-3 overflow-y-auto hidden"><div class="bg-card border border-custom rounded-xl p-5 w-full max-w-md space-y-3 my-4"><div id="coach-body" class="space-y-3"></div></div></div>
 
     <!-- ADD/EDIT EXERCISE MODAL -->
     <div id="exerciseModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
@@ -435,6 +439,7 @@
             document.getElementById('current-user-display').innerText = `User: ${activeProfile}`;
             renderProfileDropdown();
             loadUserStatsForm();
+            rolloverDay(); initPlan();
             renderWorkout();
             updateNutritionUI();
             updateWaterUI();
@@ -462,9 +467,9 @@
         }
 
         function saveUserStats() {
-            const height = parseInt(document.getElementById('stat-height').value) || 157;
-            const weight = parseInt(document.getElementById('stat-weight').value) || 56;
-            const goalweight = parseInt(document.getElementById('stat-goalweight').value) || weight;
+            const height = parseFloat(document.getElementById('stat-height').value) || 157;
+            const weight = parseFloat(document.getElementById('stat-weight').value) || 56;
+            const goalweight = parseFloat(document.getElementById('stat-goalweight').value) || weight;
             const age = parseInt(document.getElementById('stat-age').value) || 22;
             const gender = document.getElementById('stat-gender').value;
 
@@ -596,6 +601,7 @@
                             <input type="text" placeholder="Weight (kg)" value="${savedWeight}" onchange="saveExerciseData(${idx}, 'w', this.value)" class="w-1/2 bg-black border border-custom rounded px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-white font-mono">
                             <input type="text" placeholder="Reps Done" value="${savedReps}" onchange="saveExerciseData(${idx}, 'r', this.value)" class="w-1/2 bg-black border border-custom rounded px-2.5 py-1.5 text-xs text-center text-white focus:outline-none focus:border-white font-mono">
                         </div>
+                        ${targetHTML(ex)}
                         ${guideHTML(idx, ex)}
                         <button onclick="toggleDone(${idx})" class="w-full py-2 rounded-lg text-xs font-bold transition ${done ? 'bg-green-600 text-white' : 'bg-neutral-900 border border-custom text-gray-300 hover:bg-neutral-800'}"><i class="fa-solid ${done ? 'fa-circle-check' : 'fa-circle'} mr-1"></i>${done ? 'Done' : 'Mark as done'}</button>
                     </div>
@@ -611,66 +617,73 @@
             document.getElementById('workout-progress-bar').style.width = `${pct}%`;
         }
 
-        // ---- REFINED HUMAN ANATOMICAL & BIOOMECHANICALLY CORRECT 3D ANIMATIONS ----
-        // Angles tuned for natural ergonomic human range (degrees)
+        // ---- Exercise how-to animations (side-view stick figure) ----
+        // pose = [torso, upperArm, foreArm, thigh, shin, lift]; angles: 0=down, 90=forward, 180=up, 270=back
+        // k: s=seated, f=standing, h=hyper bench. cab: 1=cable from top, 2=cable from front
         const ANIM = {
-            press: {k:'s', a:[180, 275, 80], b:[180, 85, 95]},
-            incline: {k:'s', a:[210, 280, 85], b:[210, 110, 105]},
-            ohp: {k:'s', a:[180, 15, 175], b:[180, 170, 175]},
-            lateral: {k:'f', a:[180, 0, 0], b:[180, 88, 85]},
-            pushdown: {k:'f', cab:1, a:[180, 10, 85], b:[180, 10, 15]},
-            ohext: {k:'f', cab:1, a:[180, 160, 310], b:[180, 160, 160]},
-            pulldown: {k:'s', cab:1, a:[185, 150, 150], b:[185, 15, 100]},
-            row: {k:'s', cab:2, a:[180, 80, 80], b:[180, 275, 80]},
-            facepull: {k:'f', cab:2, a:[180, 85, 85], b:[180, 260, 95]},
-            curl: {k:'f', a:[180, 0, 0], b:[180, 0, 145]},
-            squat: {k:'f', a:[180, 15, 100, 0, 0], b:[145, 15, 100, 90, 40]},
-            legpress: {k:'s', a:[210, 25, 90, 155, 65], b:[210, 25, 90, 125, 120]},
-            legext: {k:'s', a:[180, 10, 75, 90, 0], b:[180, 10, 75, 90, 88]},
-            legcurl: {k:'s', a:[180, 10, 75, 90, 88], b:[180, 10, 75, 90, 12]},
-            calf: {k:'f', a:[180, 0, 0, 0, 0, 0], b:[180, 0, 0, 0, 0, 15]},
-            hyper: {k:'h', a:[28, 90, 245, 270, 270], b:[90, 90, 245, 270, 270]},
-            pallof: {k:'f', cab:2, a:[180, 40, 90], b:[180, 85, 85]},
-            fly: {k:'s', a:[180, 265, 275], b:[180, 85, 85]},
-            rfly: {k:'s', a:[180, 85, 85], b:[180, 260, 260]},
-            straight: {k:'f', cab:1, a:[172, 140, 140], b:[172, 15, 15]}
+            press:{k:'s',a:[180,290,90],b:[180,92,90],s:'Sit tall with back and head against the pad.|Press forward until arms are almost straight, without locking out.|Return slowly over 2-3 seconds.'},
+            incline:{k:'s',a:[215,300,110],b:[215,125,125],s:'Set the bench to about 30 degrees, weights at chest level.|Press up and slightly in, wrists stacked over elbows.|Lower slowly until you feel a chest stretch.'},
+            ohp:{k:'s',a:[180,15,180],b:[180,180,180],s:'Sit tall, weights at shoulder height, core braced.|Press straight overhead without arching your back.|Lower under control back to the shoulders.'},
+            lateral:{k:'f',a:[180,0,0],b:[180,95,85],s:'Stand tall with a slight elbow bend, weights at your sides.|Raise out to the sides to shoulder height, leading with the elbows.|Lower slowly, no swinging. (Shown side-on: you raise to the sides.)'},
+            pushdown:{k:'f',cab:1,a:[178,5,95],b:[178,5,5],s:'Pin elbows to your sides, handle at chest height.|Push down until arms are straight; flare the rope at the bottom.|Let it rise slowly while elbows stay still.'},
+            ohext:{k:'f',cab:1,a:[180,170,330],b:[180,170,170],s:'Face away from the cable, elbows pointing forward by your ears.|Extend arms up and forward until straight.|Lower behind your head slowly, ribs down.'},
+            pulldown:{k:'s',cab:1,a:[190,165,165],b:[190,10,120],s:'Grip the bar, lean back slightly, chest up.|Pull the bar to your upper chest, driving elbows down.|Control it back up until arms are straight.'},
+            row:{k:'s',cab:2,a:[180,90,90],b:[180,285,90],s:'Sit tall with arms extended and shoulders down.|Pull elbows back, squeezing shoulder blades together.|Return slowly without rounding your shoulders.'},
+            facepull:{k:'f',cab:2,a:[180,90,90],b:[180,262,100],s:'Rope at face height, step back, arms extended.|Pull toward your forehead with elbows high and wide.|Pause, then return with control.'},
+            curl:{k:'f',a:[180,0,0],b:[180,0,155],s:'Stand tall with elbows tucked at your sides.|Curl up without swinging; elbows stay still.|Lower fully over 2-3 seconds.'},
+            squat:{k:'f',a:[180,20,125,0,0],b:[150,20,125,95,350],s:'Feet shoulder-width, weight held at your chest.|Sit down and back, knees tracking over toes, chest up.|Drive through mid-foot to stand.'},
+            legpress:{k:'s',a:[215,0,0,150,60],b:[215,0,0,125,125],s:'Feet shoulder-width on the plate, back flat on the pad.|Lower until knees are about 90 degrees, hips stay down.|Press through your heels, stopping just short of lockout.'},
+            legext:{k:'s',a:[180,10,80,90,0],b:[180,10,80,90,90],s:'Sit back, pad on your lower shins, knees in line with the pivot.|Extend until legs are nearly straight and squeeze the quads.|Lower slowly, no swinging.'},
+            legcurl:{k:'s',a:[180,10,80,90,90],b:[180,10,80,90,10],s:'Hips pressed into the pad, roller above your heels.|Curl heels toward glutes and squeeze the hamstrings.|Return slowly to a straight leg.'},
+            calf:{k:'f',a:[180,0,0,0,0,0],b:[180,0,0,0,0,10],s:'Balls of feet on the edge, stand tall.|Rise as high as you can and pause 1 second.|Lower into a full stretch.'},
+            hyper:{k:'h',a:[30,90,250,268,268],b:[95,90,250,268,268],s:'Pad at your hips, body in a straight line head to heels.|Hinge down with a flat back.|Squeeze glutes to lift back to straight, no over-arching.'},
+            pallof:{k:'f',cab:2,a:[180,45,100],b:[180,90,90],s:'Stand side-on to the cable, hands at your chest.|Press hands straight out, resisting the pull.|Hold 1-2 seconds, then bring back to the chest.'},
+            fly:{k:'s',a:[180,280,285],b:[180,90,90],s:'Sit tall, arms level with your chest, slight elbow bend.|Sweep the arms together in a wide arc.|Open slowly until you feel a stretch.'},
+            rfly:{k:'s',a:[180,90,90],b:[180,268,268],s:'Chest on the pad, arms forward at shoulder height.|Sweep arms back, squeezing the rear shoulders.|Return slowly and don\'t shrug.'},
+            straight:{k:'f',cab:1,a:[170,150,150],b:[170,10,10],s:'Hinge slightly, arms straight overhead on the cable.|Sweep the bar down to your thighs, arms straight.|Control it back up to a full stretch.'}
         };
-        ANIM.pushup = {k:'p', a:[115, 0, 0, 295, 295], b:[102, 280, 0, 282, 282]};
-
-        const MUSCLE = {press:'CU', incline:'CU', ohp:'U', lateral:'U', pushdown:'U', ohext:'U', pulldown:'KU', row:'KU', facepull:'U', curl:'U', squat:'H', legpress:'H', legext:'H', legcurl:'H', calf:'S', hyper:'KH', pallof:'W', fly:'C', rfly:'U', straight:'KU', pushup:'CU'};
+        ANIM.pushup = {k:'p',a:[117,0,0,297,297],b:[104,285,0,284,284],s:'Hands under shoulders, body in one straight line from head to heels.|Lower your chest to the floor with elbows about 45 degrees from your body.|Push the floor away until arms are straight; keep your core tight.'};
+        const MUSCLE = {press:'CU',incline:'CU',ohp:'U',lateral:'U',pushdown:'U',ohext:'U',pulldown:'KU',row:'KU',facepull:'U',curl:'U',squat:'H',legpress:'H',legext:'H',legcurl:'H',calf:'S',hyper:'KH',pallof:'W',fly:'C',rfly:'U',straight:'KU',pushup:'CU'};
         ANIM.lateral.fz = 1;
         ['curl', 'incline', 'ohp', 'lateral'].forEach(k => { ANIM[k].db = 1; });
-        ['press', 'incline', 'ohp', 'pushup'].forEach(k => { ANIM[k].fl = 1.35; });
+        ['press', 'incline', 'ohp', 'pushup'].forEach(k => { ANIM[k].fl = 1.45; });
         ['curl', 'pushdown', 'row'].forEach(k => { ANIM[k].fl = 0.8; });
         Object.keys(MUSCLE).forEach(k => { ANIM[k].m = MUSCLE[k]; });
-
+        // Proper-form coaching: w = muscles, s = setup/execution, x = mistakes, b = breathing + tempo
         const FORM = {
-            press:{w:'Chest, front delts, triceps',s:'Adjust seat so handles are at mid-chest level.|Back flat against the pad, shoulder blades pinched back, feet planted firmly.|Press smoothly until arms are nearly straight without locking elbows.|Lower over 2-3 seconds to feel a gentle chest stretch.',x:'Shrugging shoulders upward.|Hard-locking elbows at top extension.|Lifting hips off the seat or bouncing weight.',br:'Exhale pushing, inhale returning. 2s concentric, 3s eccentric.'},
-            incline:{w:'Upper chest, front delts, triceps',s:'Set bench to 30-45 degrees. Sit back with feet flat.|Press weights up and slightly inward over your upper chest, wrists stacked over elbows.|Lower until handles/dumbbells align with upper chest level.',x:'Flaring elbows out to 90 degrees wide.|Arching lower back excessively off the bench.|Bouncing at bottom range.',br:'Exhale pushing, inhale returning.'},
-            ohp:{w:'Shoulders, triceps, upper chest',s:'Sit tall with core braced and ribs tucked down.|Press straight overhead without arching the lower back.|Lower under control back to shoulder level.',x:'Arching lower back to compensate.|Pressing forward instead of straight up.',br:'Exhale pressing, inhale lowering.'},
-            lateral:{w:'Side delts',s:'Stand tall with slight forward lean and soft elbows; use controlled weights.|Lead with elbows out to sides to shoulder height.|Lower slowly without swinging.',x:'Using momentum with the torso.|Raising above shoulder level (traps take over).',br:'Exhale raising, inhale lowering.'},
-            pushdown:{w:'Triceps',s:'Stand close to cable, pin elbows tightly to ribs.|Push down until arms are fully straight, spreading rope ends at bottom.|Let rise slowly until forearms pass 90 degrees.',x:'Elbows drifting forward or flaring out.',br:'Exhale pushing down.'},
-            ohext:{w:'Triceps (long head)',s:'Face away from stack, elbows pointing forward framing ears.|Extend forearms forward and up until straight.|Lower behind head for deep triceps stretch.',x:'Moving upper arms or flaring elbows wide.',br:'Exhale extending.'},
-            pulldown:{w:'Lats, biceps, rear delts',s:'Grip bar slightly wider than shoulders, chest up, slight lean back.|Pull bar to upper chest, driving elbows down and back.|Return smoothly to full arm extension.',x:'Pulling behind the neck or leaning/swinging wildly.',br:'Exhale pulling down.'},
-            row:{w:'Mid back, lats, biceps, rear delts',s:'Sit tall, chest against pad or upright torso, arms extended.|Pull handle to lower ribs, squeezing shoulder blades together.|Return slowly without rounding shoulders.',x:'Rocking torso or shrugging shoulders.',br:'Exhale pulling.'},
-            facepull:{w:'Rear delts, upper back, rotator cuff',s:'Rope at face height, step back into staggered stance.|Pull toward forehead with elbows high and wide.|Pause 1s, return with control.',x:'Leaning back too far or pulling too low.',br:'Exhale pulling.'},
-            curl:{w:'Biceps, forearms',s:'Stand tall, elbows tucked at sides.|Curl weights up without moving upper arms.|Lower fully over 3 seconds.',x:'Swinging hips or upper body.',br:'Exhale curling.'},
-            squat:{w:'Quads, glutes, core',s:'Hold weight at chest, feet shoulder-width, toes turned out slightly.|Sit down and back between knees, chest upright.|Drive through mid-foot to stand.',x:'Knees caving inward or heels lifting.',br:'Inhale down, exhale up.'},
-            legpress:{w:'Quads, glutes, hamstrings',s:'Back and hips flat on pad, feet shoulder-width on plate.|Lower until knees are at 90 degrees, hips stay down.|Press through whole foot, stopping short of lockout.',x:'Lifting hips off pad or locking knees hard.',br:'Inhale down, exhale pressing.'},
-            legext:{w:'Quads',s:'Back against pad, knees aligned with machine pivot.|Extend legs until nearly straight, squeeze quads for 1s.|Lower slowly.',x:'Kicking or swinging weight up.',br:'Exhale extending.'},
-            legcurl:{w:'Hamstrings',s:'Hips pressed into pad, roller above heels.|Curl heels toward glutes smoothly.|Return slowly to straight legs.',x:'Lifting hips off pad.',br:'Exhale curling.'},
-            calf:{w:'Calves',s:'Balls of feet on edge, heels hanging free.|Lower deep for stretch, rise high onto toes.|Pause 1s at top.',x:'Bouncing at bottom.',br:'Exhale rising.'},
-            hyper:{w:'Glutes, hamstrings, lower back',s:'Pad below hip bones, body straight.|Hinge at hips with flat back, lower down.|Squeeze glutes to return to straight line.',x:'Hyperextending past straight line or rounding back.',br:'Inhale down, exhale rising.'},
-            pallof:{w:'Core (anti-rotation), obliques',s:'Stand side-on to cable, hold handle at sternum.|Press straight out, resisting rotation; keep hips and shoulders square.|Hold 2s, return.',x:'Torso twisting toward cable.',br:'Exhale pressing out.'},
-            fly:{w:'Chest, front delts',s:'Seat at chest level, slight bend in elbows.|Sweep arms together in hugging arc, squeeze chest.|Open slowly to comfortable stretch.',x:'Shrugging shoulders or straightening arms.',br:'Exhale closing.'},
-            rfly:{w:'Rear delts, upper back',s:'Chest against pad, handles at shoulder height.|Sweep arms back in wide arc until aligned with shoulders.|Return slowly.',x:'Shrugging or using lower back momentum.',br:'Exhale sweeping back.'},
-            straight:{w:'Lats, triceps (long head), core',s:'Stand back from high cable, hinge slightly at hips, arms straight.|Sweep bar down to thighs keeping arms straight.|Control back up.',x:'Bending elbows into pushdown.',br:'Exhale pulling down.'},
-            pushup:{w:'Chest, front delts, triceps, core',s:'Hands under shoulders, body in straight line.|Lower chest toward floor with elbows at 45 degrees.|Push floor away until arms are straight.',x:'Hips sagging or elbows flaring wide.',br:'Inhale down, exhale pushing.'}
+            press:{w:'Chest, front delts, triceps',s:'Adjust the seat so the handles sit level with mid-chest.|Back flat on the pad, shoulder blades pulled back and down, feet planted.|Press until arms are almost straight, keeping shoulders down.|Lower over 2-3 s until you feel a chest stretch.',x:'Shoulders shrugging toward the ears.|Locking the elbows hard at the top.|Lifting the hips or bouncing the weight.',br:'Exhale pressing, inhale lowering. 2 s up, 1 s pause, 3 s down.'},
+            incline:{w:'Upper chest, front delts, triceps',s:'Set the bench to 30-45 degrees (steeper shifts load to the shoulders).|Sit back, shoulder blades pinched, feet flat on the floor.|Press up and slightly together over the upper chest, wrists stacked over elbows.|Lower until elbows are just below the bench, about 45-60 degrees from the torso.',x:'Elbows flared out to 90 degrees.|Arching the lower back off the bench.|Bouncing at the bottom.',br:'Exhale pressing, inhale lowering. 2 s up, 3 s down.'},
+            ohp:{w:'Shoulders, triceps, upper chest',s:'Seat back upright, dumbbells at shoulder height, palms facing forward.|Brace the abs, ribs down, glutes squeezed.|Press up in a slight arc until arms are straight above the shoulders.|Lower under control to about ear level.',x:'Arching the lower back.|Pressing in front of the face instead of overhead.|Shrugging at the top.',br:'Exhale pressing, inhale lowering. 2 s up, 3 s down.'},
+            lateral:{w:'Side delts',s:'Stand tall with a slight forward lean and soft elbows; use light weights.|Lead with the elbows and raise out to the sides to shoulder height.|Pause 1 s at the top, then lower slowly.|Shown side-on, so watch the 3D view from the front too.',x:'Swinging the torso to lift the weight.|Raising above shoulder height so the traps take over.|Using weights too heavy to control.',br:'Exhale up, inhale down. 1 s up, 3 s down.'},
+            pushdown:{w:'Triceps',s:'Stand close to the cable, slight forward lean, elbows pinned to your ribs.|Start with forearms parallel to the floor.|Push down until arms are fully straight, spreading the rope ends at the bottom.|Let it rise until forearms are just past 90 degrees.',x:'Elbows drifting forward or flaring out.|Leaning your body weight over the bar.|Shoulders rolling forward.',br:'Exhale pushing down. 1 s down, 2 s up.'},
+            ohext:{w:'Triceps (long head)',s:'Rope on the low pulley, turn away from the stack, staggered stance.|Elbows point forward by your ears; upper arms stay still.|Extend the forearms forward and up until the arms are straight.|Lower behind the head until you feel a deep triceps stretch.',x:'Elbows flaring wide.|Arching the lower back.|Moving the upper arms.',br:'Exhale extending. 1 s up, 3 s down.'},
+            pulldown:{w:'Lats, biceps, rear delts',s:'Lock thighs under the pads; grip slightly wider than shoulders (or use neutral handles).|Chest up, lean back 10-15 degrees, shoulders down.|Pull the bar to your upper chest, driving the elbows down and back.|Let the bar rise slowly until the arms are fully stretched.',x:'Pulling the bar behind the neck.|Leaning back and swinging.|Shrugging the shoulders to the ears.',br:'Exhale pulling. 1 s pull, 3 s return.'},
+            row:{w:'Mid back, lats, biceps, rear delts',s:'Sit tall with knees slightly bent, chest up, arms reaching forward.|Start the pull by squeezing the shoulder blades together.|Pull the handle to your lower ribs, elbows close to the body.|Pause 1 s, then extend slowly without rounding forward.',x:'Rocking the torso back and forth.|Shrugging the shoulders.|Letting the shoulders round at the stretch.',br:'Exhale pulling. 1 s pull, 1 s squeeze, 3 s return.'},
+            facepull:{w:'Rear delts, upper back, rotator cuff',s:'Rope at forehead height, staggered stance, lean back slightly.|Pull the rope toward your forehead with hands apart.|Finish with elbows high and wide, hands beside the ears.|Pause 1 s, then return slowly.',x:'Using too much weight and leaning way back.|Pulling to the neck or chest.|Elbows dropping below the hands.',br:'Exhale pulling. 1 s pull, 2 s return.'},
+            curl:{w:'Biceps, forearms',s:'Stand tall, feet hip-width, elbows at your sides.|Curl the weights up, keeping the upper arms still.|Squeeze at the top without letting the elbows travel forward.|Lower over 3 s to fully straight arms.',x:'Swinging the hips or back.|Elbows drifting forward.|Dropping the weight quickly.',br:'Exhale curling. 2 s up, 3 s down.'},
+            squat:{w:'Quads, glutes, core',s:'Hold one dumbbell vertically at the chest, elbows pointing down.|Feet slightly wider than shoulders, toes turned out 15-30 degrees.|Brace, then sit down between the knees with an upright chest.|Go to thighs parallel or deeper, then drive up through the mid-foot.',x:'Knees caving inward.|Heels lifting off the floor.|Rounding the lower back at the bottom.',br:'Inhale down, exhale standing. 3 s down, 1 s up.'},
+            legpress:{w:'Quads, glutes, hamstrings',s:'Back and hips flat on the pad, feet shoulder-width on the plate.|Release the safeties and lower until knees reach about 90 degrees.|Press through the whole foot until legs are almost straight.|Keep hips glued to the pad the entire rep.',x:'Locking the knees at the top.|Hips lifting and the lower back rounding.|Knees collapsing inward.',br:'Inhale down, exhale pressing. 3 s down, 2 s up.'},
+            legext:{w:'Quads',s:'Back against the pad, knees in line with the machine pivot.|Pad rests on the lower shins just above the ankles.|Extend until legs are nearly straight and squeeze the quads for 1 s.|Lower slowly.',x:'Swinging or kicking the weight up.|Lifting the hips off the seat.|Locking the knees hard.',br:'Exhale extending. 1 s up, 1 s squeeze, 3 s down.'},
+            legcurl:{w:'Hamstrings',s:'Align the knees with the pivot, hips pressed down, pad just above the heels.|Curl the heels toward your glutes in a smooth arc.|Squeeze for 1 s at the end of the curl.|Return slowly to almost straight.',x:'Lifting the hips off the pad.|Using momentum.|Cutting the range of motion short.',br:'Exhale curling. 1 s curl, 3 s return.'},
+            calf:{w:'Calves',s:'Balls of the feet on the step, heels hanging free, knees straight.|Lower the heels as far as you can for a deep stretch.|Rise onto your toes as high as possible.|Pause 1 s at the top.',x:'Bouncing at the bottom.|Bending the knees.|Rolling to the outside of the feet.',br:'Exhale rising. 1 s up, 1 s pause, 3 s down.'},
+            hyper:{w:'Glutes, hamstrings, lower back',s:'Pad just below the hip bones, feet locked in, body straight.|Cross the arms on your chest and hinge at the hips with a flat back.|Lower until about 60-90 degrees of hip bend.|Squeeze the glutes to rise until the body is in a straight line.',x:'Hyperextending past a straight line.|Rounding the back at the bottom.|Using momentum.',br:'Inhale down, exhale rising. 2 s down, 1 s up.'},
+            pallof:{w:'Core (anti-rotation), obliques',s:'Cable at chest height, stand side-on, feet shoulder-width, knees soft.|Hold the handle at your sternum with both hands.|Press straight out, resisting the pull; hips and shoulders stay square.|Hold 2 s, return to the chest, then switch sides.',x:'Torso twisting toward the cable.|Leaning away from the stack.|Holding your breath.',br:'Exhale pressing out. 2 s out, 2 s hold, 2 s back.'},
+            fly:{w:'Chest, front delts',s:'Seat so the handles are at chest level, back flat on the pad.|Slight bend in the elbows, shoulders pulled back and down.|Sweep the arms together in a hugging arc and squeeze the chest.|Open slowly to a comfortable stretch, not far behind the torso.',x:'Shrugging the shoulders.|Straightening the arms so it becomes a press.|Overstretching behind the body.',br:'Exhale closing. 1 s in, 1 s squeeze, 3 s out.'},
+            rfly:{w:'Rear delts, upper back',s:'Chest against the pad, handles at shoulder height.|Slight elbow bend, shoulders down.|Sweep the arms back in a wide arc until in line with the shoulders.|Return slowly without letting the weight stack rest.',x:'Shrugging.|Pushing back with the lower back.|Going too heavy and swinging.',br:'Exhale sweeping back. 1 s back, 1 s squeeze, 3 s return.'},
+            straight:{w:'Lats, triceps (long head), core',s:'Stand two steps back from a high cable, hinge slightly at the hips.|Arms straight with a soft elbow bend.|Sweep the bar down to your thighs, keeping the arms straight.|Control it back up until you feel a lat stretch.',x:'Bending the elbows into a pushdown.|Rounding the lower back.|Swinging the torso.',br:'Exhale pulling down. 1 s down, 3 s up.'},
+            pushup:{w:'Chest, front delts, triceps, core',s:'Hands slightly wider than shoulders, body in one straight line, glutes and abs tight.|Lower the chest toward the floor with elbows about 45 degrees from the torso.|Stop just above the floor, then push the floor away.|Finish with arms straight and shoulder blades spread. Too hard? Use knees or an incline.',x:'Hips sagging or piking up.|Elbows flaring out to 90 degrees.|Head dropping forward.',br:'Inhale down, exhale pushing. 2 s down, 1 s up.'}
         };
         Object.keys(FORM).forEach(k => Object.assign(ANIM[k], FORM[k]));
-
-        const VARIANTS = [[/hammer/, 'Hammer grip: palms face each other.'], [/incline.*curl/, 'Set bench to 45-60 degrees for full stretch.'], [/neutral/, 'Neutral grip: palms face each other.'], [/chest-supported/, 'Keep chest glued to pad.'], [/lying leg curl/, 'Keep hips pressed into bench.'], [/seated leg curl/, 'Lock thigh pad down snugly.'], [/leg press/, 'Feet high target glutes/hamstrings.'], [/goblet/, 'Hold dumbbell vertical at chest.'], [/cable lateral/, 'Stand side-on to cable.'], [/incline bench lateral/, 'Lie chest-down on incline bench.'], [/rope/, 'Spread rope ends at bottom.']];
-
+        const VARIANTS = [[/hammer/, 'Hammer grip: palms face each other all the way; keep wrists straight.'], [/incline.*curl/, 'Set the bench to 45-60 degrees and let the arms hang slightly behind the torso for a full stretch.'], [/neutral/, 'Neutral grip: palms face each other; pull the elbows down toward your ribs.'], [/chest-supported/, 'Keep your chest glued to the pad; do not lift your torso to finish the rep.'], [/lying leg curl/, 'Lie face down with hips pressed into the bench; do not arch the lower back.'], [/seated leg curl/, 'Lock the thigh pad down snugly and keep your back against the pad.'], [/leg press/, 'Feet high on the plate shift work to glutes and hamstrings; feet low target the quads.'], [/goblet/, 'Hold the dumbbell by one end at chest height; elbows track inside the knees at the bottom.'], [/cable lateral/, 'Stand side-on to the cable with the working arm across your body, leaning slightly away.'], [/incline bench lateral/, 'Lie chest-down on an incline bench so the torso cannot swing.'], [/rope/, 'Spread the rope ends apart at the bottom to fully squeeze the triceps.'], [/standing calf/, 'Knees straight but not locked; use the full range from deep stretch to full rise.']];
+        // muscle map: [host, along, offset, side z, rx, ry, rz]
+        const MUS = { chest: ['T', 0.74, 0.095, 0.075, 0.05, 0.075, 0.1], trap: ['T', 0.93, -0.06, 0.05, 0.06, 0.07, 0.09], lat: ['T', 0.55, -0.095, 0.12, 0.04, 0.19, 0.09], back: ['T', 0.22, -0.09, 0.045, 0.035, 0.16, 0.04], abs: ['T', 0.38, 0.105, 0, 0.03, 0.17, 0.075], obl: ['T', 0.4, 0.02, 0.15, 0.05, 0.15, 0.04], glute: ['T', 0, -0.09, 0.075, 0.085, 0.095, 0.085], quad: ['thigh', 0.5, 0.06, 0, 0.065, 0.17, 0.07], ham: ['thigh', 0.55, -0.055, 0, 0.055, 0.16, 0.065], calf: ['shin', 0.28, -0.05, 0, 0.055, 0.14, 0.055], biceps: ['ua', 0.5, 0.04, 0, 0.04, 0.11, 0.045], triceps: ['ua', 0.5, -0.04, 0, 0.04, 0.11, 0.045], forearm: ['fa', 0.35, 0.015, 0, 0.052, 0.1, 0.052] };
+        const MUSN = { chest: 'Chest', delt: 'Shoulders', trap: 'Traps', lat: 'Lats', biceps: 'Biceps', triceps: 'Triceps', forearm: 'Forearms', abs: 'Abs', obl: 'Obliques', back: 'Lower back', glute: 'Glutes', quad: 'Quads', ham: 'Hamstrings', calf: 'Calves' };
+        const MP = { press: 'chest|delt,triceps', incline: 'chest,delt|triceps', ohp: 'delt|triceps,trap', lateral: 'delt|trap', pushdown: 'triceps|', ohext: 'triceps|', pulldown: 'lat|biceps,forearm,delt', row: 'lat,trap|biceps,delt,back', facepull: 'delt,trap|', curl: 'biceps|forearm', squat: 'quad,glute|ham,calf,abs,back', legpress: 'quad,glute|ham,calf', legext: 'quad|', legcurl: 'ham|calf', calf: 'calf|', hyper: 'glute,ham,back|', pallof: 'abs,obl|', fly: 'chest|delt', rfly: 'delt,trap|triceps', straight: 'lat|triceps,abs', pushup: 'chest|delt,triceps,abs' };
+        Object.entries(MP).forEach(([k, v]) => { const [a, b] = v.split('|'); ANIM[k].pr = a.split(','); ANIM[k].sc = b ? b.split(',') : []; });
+        ANIM.squat.kf = 0.5; ANIM.legpress.kf = 0.4;
+        ANIM.ohp.a = [180, 80, 180]; ANIM.ohp.b = [180, 175, 180];
+        ANIM.hyper.a = [25, 90, 250, 268, 268]; ANIM.hyper.b = [88, 90, 250, 268, 268];
+        ANIM.legpress.a = [215, 30, 100, 165, 75]; ANIM.legpress.b = [215, 30, 100, 137, 133];
         const PAT_RULES = [[/push-?up|press-?up/,'pushup'],[/pallof/,'pallof'],[/face ?pull/,'facepull'],[/straight/,'straight'],[/pull-?down|pull down/,'pulldown'],[/push-?down/,'pushdown'],[/overhead.*(ext|tricep)|skull/,'ohext'],[/reverse (pec|fly|flye)|rear delt/,'rfly'],[/fly|pec deck/,'fly'],[/lateral|side raise/,'lateral'],[/leg curl|hamstring curl/,'legcurl'],[/leg ext/,'legext'],[/leg press/,'legpress'],[/calf/,'calf'],[/hyper|roman|back ext/,'hyper'],[/squat|lunge/,'squat'],[/curl/,'curl'],[/shoulder press|overhead press|arnold/,'ohp'],[/incline/,'incline'],[/press|dip/,'press'],[/row/,'row']];
         function matchPat(name) {
             const n = (name || '').toLowerCase();
@@ -691,19 +704,21 @@
             else if (p.k === 'p') { hip = sub(sub(sub([135, 126], d(F, 22)), d(U, 24)), d(T, 38)); kn = add(hip, d(H, 32)); an = add(kn, d(S, 32)); }
             else { hip = p.k === 'h' ? [80, 72] : [78, 92]; kn = add(hip, d(H, 32)); an = add(kn, d(S, 32)); }
             const sh = add(hip, d(T, 38)), el = add(sh, d(U, 24));
-            return { hip, kn, an, sh, el, hd: add(sh, d(T, 11)), ha: add(el, d(F, 22)), U, F };
+            return { e, hip, kn, an, sh, el, hd: add(sh, d(T, 11)), ha: add(el, d(F, 22)), U, F };
         }
 
         function figSvg(p, t) {
-            const { hip, kn, an, sh, hd, el, ha } = posePts(p, t), r = Math.PI / 180, d = (a, l) => [Math.sin(a * r) * l, Math.cos(a * r) * l];
+            const { hip, kn, an, sh, hd, el, ha } = posePts(p, t), T = 0;
+            const r = Math.PI / 180, d = (a, l) => [Math.sin(a * r) * l, Math.cos(a * r) * l], add = (x, y) => [x[0] + y[0], x[1] + y[1]];
             const td = [(sh[0] - hip[0]) / 38, (sh[1] - hip[1]) / 38];
             const m = k => (p.m || '').includes(k);
             const ln = (a, b, x = '') => `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" ${x}/>`;
             const seg = (a, b, k) => ln(a, b, m(k) ? 'stroke="#ef4444"' : '');
+            const hot = 'stroke="#ef4444" stroke-width="11"';
             const equip = p.k === 's' ? '<rect x="58" y="96" width="44" height="5" fill="#444" stroke="none"/>'
                 : p.k === 'h' ? '<rect x="70" y="74" width="20" height="8" fill="#444" stroke="none"/><path d="M80 82V128" stroke="#444" stroke-width="3"/>' : '';
             const cab = p.cab ? ln(ha, p.cab === 1 ? [150, 4] : [176, sh[1]], 'stroke="#555" stroke-width="2" stroke-dasharray="3"') : '';
-            return `<g stroke-linecap="round" fill="none" stroke="#d4d4d4" stroke-width="7">${equip}${cab}${seg(hip, kn, 'H')}${seg(kn, an, 'S')}${ln(an, [an[0] + 9, an[1]], 'stroke-width="5"')}${ln(hip, sh, 'stroke-width="10"')}${seg(sh, el, 'U')}${seg(el, ha, 'F')}<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="8" stroke-width="3" fill="#0a0a0a"/><circle cx="${ha[0].toFixed(1)}" cy="${ha[1].toFixed(1)}" r="5" fill="#60a5fa" stroke="none"/></g>`;
+            return `<g stroke-linecap="round" fill="none" stroke="#d4d4d4" stroke-width="7">${equip}${cab}${seg(hip, kn, 'H')}${seg(kn, an, 'S')}${ln(an, [an[0] + 9, an[1]], 'stroke-width="5"')}${ln(hip, sh, 'stroke-width="10"')}${m('W') ? ln(hip, [hip[0] + td[0] * 20, hip[1] + td[1] * 20], hot) : ''}${m('C') || m('K') ? ln([hip[0] + td[0] * 16, hip[1] + td[1] * 16], sh, hot) : ''}${seg(sh, el, 'U')}${seg(el, ha, 'F')}<circle cx="${hd[0].toFixed(1)}" cy="${hd[1].toFixed(1)}" r="8" stroke-width="3" fill="#0a0a0a"/><circle cx="${ha[0].toFixed(1)}" cy="${ha[1].toFixed(1)}" r="5" fill="#60a5fa" stroke="none"/></g>`;
         }
 
         let animRAF = null, R3 = null;
@@ -733,7 +748,7 @@
                 const ring = new T.Mesh(new T.RingGeometry(1.64, 1.7, 64), new T.MeshBasicMaterial({ color: 0x3a3a46 }));
                 ring.rotation.x = -Math.PI / 2; ring.position.y = -0.035; scene.add(ring);
                 R3 = { renderer, scene, cam, mats,
-                    torso: mesh(torsoGeo, mats.shirt), pelvis: sph(0.11, mats.shorts, 1, 0.9, 1.5), neck: mesh(new T.CylinderGeometry(0.042, 0.05, 1, 12)),
+                    torso: mesh(torsoGeo, mats.skin), pelvis: sph(0.11, mats.shorts, 1, 0.9, 1.5), neck: mesh(new T.CylinderGeometry(0.042, 0.05, 1, 12)),
                     head: sph(0.1, mats.skin, 0.92, 1.12, 0.95), hair: sph(0.104, mats.hair, 0.95, 1.02, 1), nose: sph(0.02),
                     blob: sph(1, mats.hot), seat: mesh(new T.BoxGeometry(0.55, 0.06, 0.4), mats.seat), back: mesh(new T.BoxGeometry(0.06, 0.9, 0.42), mats.seat), post: mesh(new T.BoxGeometry(0.08, 1, 0.08), mats.dark),
                     cable: mesh(new T.CylinderGeometry(0.007, 0.007, 1, 6), mats.dark),
@@ -744,6 +759,8 @@
                     foot: two(() => sph(0.1, mats.shoe, 1.3, 0.55, 0.72)),
                     grip: two(() => sideways(new T.CylinderGeometry(0.014, 0.014, 0.16, 10), mats.dark)),
                     plate: [0, 1, 2, 3].map(() => sideways(new T.CylinderGeometry(0.075, 0.075, 0.035, 20), mats.plate)) };
+                mats.mus = M(0xa8715a, 0.6); mats.sec = M(0xf59e0b, 0.5, { emissive: 0x3a2200 });
+                R3.mus = {}; Object.entries(MUS).forEach(([id, d]) => { R3.mus[id] = Array.from({ length: d[0] === 'T' && d[3] === 0 ? 1 : 2 }, () => sph(1, mats.mus)); });
                 return true;
             } catch (err) { R3 = false; return false; }
         }
@@ -767,15 +784,15 @@
         function pose3D(p, t, ee) {
             const R = R3, P = posePts(p, t, ee), S = 0.0175, r = Math.PI / 180, V3 = THREE.Vector3;
             const V = (pt, z = 0) => new V3((pt[0] - 90) * S, (126 - pt[1]) * S, z);
-            const mk = p.m || '', mat = k => (mk.includes(k) ? R.mats.hot : R.mats.skin);
+            const mk = '', fr = [], mat = () => R.mats.skin, inv = id => ((p.pr || []).includes(id) ? R.mats.hot : (p.sc || []).includes(id) ? R.mats.sec : R.mats.mus);
             const hip = V(P.hip), sh = V(P.sh), hdp = V(P.hd), td = sh.clone().sub(hip).normalize(), fw = new V3(td.y, -td.x, 0), tz = Math.atan2(-td.x, td.y);
-            place(R.torso, hip, sh, 0.85, 1.45);
+            place(R.torso, hip, sh, 0.85, 1.45); R.torso.scale.x *= 1 + 0.02 * Math.sin((R.ms || 0) / 700);
             place(R.neck, sh, hdp);
             R.pelvis.position.copy(hip); R.pelvis.rotation.z = tz;
             R.head.position.copy(hdp); R.hair.position.set(hdp.x - 0.012, hdp.y + 0.022, 0); R.nose.position.set(hdp.x + 0.095, hdp.y - 0.012, 0);
             [1, -1].forEach((s, i) => {
                 const lz = s * (p.k === 'p' ? 0.08 : 0.1), az = s * 0.2;
-                const h = V(P.hip, lz), k = V(P.kn, lz), a = V(P.an, lz), s3 = V(P.sh, az);
+                const h = V(P.hip, lz), k = V(P.kn, lz * (1 + (p.kf || 0) * P.e)), a = V(P.an, lz), s3 = V(P.sh, az);
                 let e, hd;
                 if (p.fz) {
                     e = s3.clone().add(new V3(0, -Math.cos(P.U * r) * 24 * S, s * Math.sin(P.U * r) * 24 * S));
@@ -786,13 +803,22 @@
                 place(R.shin[i], k, a); R.shin[i].material = mat('S');
                 place(R.ua[i], s3, e); R.ua[i].material = mat('U');
                 place(R.fa[i], e, hd); R.fa[i].material = mat('F');
-                R.js[i].material = mat('U');
+                R.js[i].material = inv('delt'); fr[i] = { thigh: [h, k], shin: [k, a], ua: [s3, e], fa: [e, hd] };
                 R.jk[i].position.copy(k); R.js[i].position.copy(s3); R.je[i].position.copy(e); R.hand[i].position.copy(hd);
                 R.foot[i].position.set(a.x + 0.06, a.y + 0.01, a.z);
                 R.grip[i].position.copy(hd); R.grip[i].visible = p.k !== 'p';
                 [0, 1].forEach(j => { const pl = R.plate[i * 2 + j]; pl.position.set(hd.x, hd.y, hd.z + (j ? -0.085 : 0.085)); pl.visible = !!p.db; });
             });
-            const bl = R.blob; bl.visible = /[CKW]/.test(mk);
+            Object.entries(MUS).forEach(([id, d]) => {
+                R.mus[id].forEach((m, i) => {
+                    const sd = i ? -1 : 1, [a, b] = d[0] === 'T' ? [hip, sh] : fr[i][d[0]];
+                    const dv = b.clone().sub(a), dir = dv.clone().normalize(), nrm = d[0] === 'T' ? new V3(dir.y, -dir.x, 0) : new V3(-dir.y, dir.x, 0);
+                    m.position.copy(a).addScaledVector(dir, d[1] * (d[0] === 'T' ? 0.665 : dv.length())).addScaledVector(nrm, d[2]);
+                    if (d[0] === 'T') m.position.z += sd * d[3];
+                    m.quaternion.setFromUnitVectors(new V3(0, 1, 0), dir); m.scale.set(d[4], d[5], d[6]); m.material = inv(id);
+                });
+            });
+            const bl = R.blob; bl.visible = false;
             if (bl.visible) {
                 const core = mk.includes('W');
                 bl.position.copy(hip).addScaledVector(td, (core ? 0.28 : 0.72) * 0.665).addScaledVector(fw, mk.includes('K') ? -0.07 : 0.07);
@@ -812,7 +838,7 @@
         function render3D(c, ms) {
             if (!ok3D()) return;
             const R = R3, p = ANIM[c.dataset.pat], anim = c.dataset.t === 'anim';
-            pose3D(p, anim ? 0 : +c.dataset.t, anim ? tempo(ms) : undefined);
+            R.ms = ms; pose3D(p, anim ? 0 : +c.dataset.t, anim ? tempo(ms) : undefined);
             const w = c.width, h = c.height, dom = R.renderer.domElement;
             if (dom.width !== w || dom.height !== h) R.renderer.setSize(w, h, false);
             R.cam.aspect = w / h; R.cam.updateProjectionMatrix();
@@ -854,7 +880,7 @@
                 : `<div class="grid grid-cols-2 gap-2">${cv('START', 0, 0.5, 300, 240)}${cv('END', Math.PI.toFixed(4), 0.5, 300, 240)}</div>`;
             const li = a => (a || '').split('|').map(x => `<li>${x}</li>`).join('');
             const vt = (VARIANTS.find(v => v[0].test((ex.name || '').toLowerCase())) || [])[1];
-            const formHTML = `<div class="text-[10px] font-mono text-blue-400 uppercase">Works: ${p.w}</div>
+            const formHTML = `<div class="flex flex-wrap gap-1 items-center"><span class="text-[10px] font-mono text-gray-500 uppercase">Muscles</span>${(p.pr || []).map(m => `<span class="px-1.5 py-0.5 rounded bg-red-600 text-white text-[10px] font-bold">${MUSN[m]}</span>`).join('')}${(p.sc || []).map(m => `<span class="px-1.5 py-0.5 rounded bg-amber-500 text-black text-[10px] font-bold">${MUSN[m]}</span>`).join('')}<span class="text-[10px] text-gray-600">red = main, amber = helping</span></div>
                     <div class="text-[10px] font-mono text-gray-300 uppercase pt-1">Proper form</div>
                     <ol class="list-decimal list-inside text-[11px] text-gray-400 space-y-0.5">${li(p.s)}</ol>
                     ${vt ? `<p class="text-[11px] text-blue-300">Tip: ${vt}</p>` : ''}
@@ -1117,6 +1143,425 @@
                 deferredPrompt = null;
             }
         });
+
+        // ======== COACH / PLAN / FOOD / CALENDAR ========
+        const pad2 = n => String(n).padStart(2, '0');
+        const dkey = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+        const wdx = d => (d.getDay() + 6) % 7;
+        const WD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const CI_INP = 'w-full bg-neutral-950 border border-custom rounded px-2.5 py-2 text-base text-white focus:outline-none focus:border-white';
+
+        // ---- Foods (per 100 g: kcal|protein|carbs|fat|typical serving g) ----
+        const FOODS = `chicken breast (cooked)|165|31|0|3.6|120
+chicken thigh (cooked)|209|26|0|11|100
+beef, lean (cooked)|217|26|0|12|100
+pork loin (cooked)|242|27|0|14|100
+salmon (cooked)|208|20|0|13|120
+tuna (canned in water)|116|26|0|1|100
+tilapia (cooked)|128|26|0|2.7|120
+shrimp (cooked)|99|24|0.2|0.3|100
+egg (boiled)|155|13|1.1|11|50
+egg white|52|11|0.7|0.2|33
+bacon (cooked)|541|37|1.4|42|20
+tofu (firm)|144|17|3|9|100
+tempeh|192|20|7.6|11|100
+greek yogurt (nonfat)|59|10|3.6|0.4|170
+milk (whole)|61|3.2|4.8|3.3|240
+milk (skim)|34|3.4|5|0.1|240
+cheddar cheese|403|25|1.3|33|28
+cottage cheese|98|11|3.4|4.3|100
+whey protein powder|400|80|8|6|30
+white rice (cooked)|130|2.7|28|0.3|160
+brown rice (cooked)|123|2.7|26|1|160
+oatmeal (cooked)|71|2.5|12|1.5|240
+oats (dry)|389|17|66|7|40
+pasta (cooked)|158|5.8|31|0.9|140
+bread (white)|265|9|49|3.2|30
+bread (whole wheat)|247|13|41|3.4|30
+tortilla (flour)|312|8|52|8|45
+potato (boiled)|87|1.9|20|0.1|150
+sweet potato (baked)|90|2|21|0.1|130
+corn|96|3.4|21|1.5|100
+quinoa (cooked)|120|4.4|21|1.9|185
+banana|89|1.1|23|0.3|118
+apple|52|0.3|14|0.2|180
+orange|47|0.9|12|0.1|130
+strawberries|32|0.7|7.7|0.3|150
+blueberries|57|0.7|14|0.3|100
+mango|60|0.8|15|0.4|165
+avocado|160|2|9|15|100
+grapes|69|0.7|18|0.2|100
+watermelon|30|0.6|7.6|0.2|150
+broccoli|34|2.8|7|0.4|90
+spinach|23|2.9|3.6|0.4|30
+carrot|41|0.9|10|0.2|60
+tomato|18|0.9|3.9|0.2|120
+cucumber|15|0.7|3.6|0.1|100
+lettuce|15|1.4|2.9|0.2|50
+onion|40|1.1|9.3|0.1|110
+bell pepper|31|1|6|0.3|120
+mushrooms|22|3.1|3.3|0.3|70
+green beans|31|1.8|7|0.2|100
+cabbage|25|1.3|5.8|0.1|90
+black beans (cooked)|132|8.9|24|0.5|130
+lentils (cooked)|116|9|20|0.4|200
+chickpeas (cooked)|164|8.9|27|2.6|160
+peanut butter|588|25|20|50|32
+almonds|579|21|22|50|28
+walnuts|654|15|14|65|28
+olive oil|884|0|0|100|14
+butter|717|0.9|0.1|81|14
+mayonnaise|680|1|0.6|75|14
+honey|304|0.3|82|0|21
+sugar|387|0|100|0|4
+dark chocolate|598|7.8|46|43|28
+ice cream|207|3.5|24|11|66
+cola|42|0|10.6|0|355
+orange juice|45|0.7|10|0.2|240
+coffee (black)|2|0.3|0|0|240
+french fries|312|3.4|41|15|117
+pizza (cheese)|266|11|33|10|107
+burger (beef, with bun)|295|17|24|14|200
+fried chicken|246|19|9|15|100
+sushi roll|143|5|28|0.7|100
+instant noodles (dry)|448|10|62|18|85`.split('\n').map(l => { const a = l.split('|'); return { n: a[0], k: +a[1], p: +a[2], c: +a[3], f: +a[4], s: +a[5] || 100 }; });
+
+        let foodRes = [], selFood = null, foodTimer = null;
+        const todayLog = () => getProfileData('foodlog_' + dkey(), []);
+        function foodRows(arr) {
+            return arr.map((f, i) => `<button onclick="pickFood(${i})" class="w-full text-left bg-neutral-950 border border-custom rounded px-2.5 py-1.5 hover:bg-neutral-900"><div class="text-xs text-white">${esc(f.n)}</div><div class="text-[10px] text-gray-500 font-mono">${Math.round(f.k)} kcal · P ${+f.p.toFixed(1)} · C ${+f.c.toFixed(1)} · F ${+f.f.toFixed(1)} per 100 g</div></button>`).join('');
+        }
+        function foodSearchInput(q) { clearTimeout(foodTimer); foodTimer = setTimeout(() => runFoodSearch(q.trim()), 300); }
+        async function runFoodSearch(q) {
+            const box = document.getElementById('food-results');
+            if (q.length < 2) { box.innerHTML = ''; return; }
+            const toks = q.toLowerCase().split(/\s+/), local = FOODS.filter(f => toks.every(t => f.n.toLowerCase().includes(t))).slice(0, 8);
+            foodRes = local.slice();
+            box.innerHTML = foodRows(foodRes) + '<div id="food-online" class="text-[10px] text-gray-600 px-1">Searching online database...</div>';
+            try {
+                const r = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=8&fields=product_name,brands,nutriments,serving_quantity`);
+                const j = await r.json();
+                if (document.getElementById('food-q').value.trim() !== q) return;
+                const on = (j.products || []).map(p => { const n = p.nutriments || {}; return { n: (p.product_name || '').trim() + (p.brands ? ` (${p.brands.split(',')[0]})` : ''), k: +n['energy-kcal_100g'], p: +n.proteins_100g || 0, c: +n.carbohydrates_100g || 0, f: +n.fat_100g || 0, s: +p.serving_quantity || 100 }; }).filter(f => f.n.trim() && isFinite(f.k)).slice(0, 8);
+                foodRes = local.concat(on);
+                box.innerHTML = foodRows(foodRes) + (foodRes.length ? '' : '<div class="text-[10px] text-gray-500 px-1">No match. Enter it manually below.</div>');
+            } catch (e) {
+                const o = document.getElementById('food-online'); if (o) o.innerText = foodRes.length ? 'Offline: showing built-in foods only.' : 'Offline and no built-in match. Enter it manually below.';
+            }
+        }
+        function pickFood(i) {
+            selFood = foodRes[i]; if (!selFood) return;
+            document.getElementById('food-results').innerHTML = '';
+            document.getElementById('food-pick').innerHTML = `<div class="bg-neutral-950 border border-custom rounded-lg p-3 space-y-2"><div class="text-xs text-white font-bold">${esc(selFood.n)}</div><div class="flex gap-2 items-center"><input id="food-g" type="number" value="${selFood.s}" oninput="updatePick()" class="w-24 bg-black border border-custom rounded px-2 py-1.5 text-base text-center text-white"><span class="text-xs text-gray-400">grams</span><button onclick="addFood()" class="ml-auto bg-white text-black font-bold text-xs px-4 py-2 rounded-lg">Add</button></div><div id="food-calc" class="text-[11px] text-gray-300 font-mono"></div></div>`;
+            updatePick();
+        }
+        function pickCalc() { const g = parseFloat(document.getElementById('food-g').value) || 0, m = g / 100, f = selFood; return { n: f.n, g, cal: Math.round(f.k * m), pro: Math.round(f.p * m * 10) / 10, carb: Math.round(f.c * m * 10) / 10, fat: Math.round(f.f * m * 10) / 10 }; }
+        function updatePick() { const e = pickCalc(); document.getElementById('food-calc').innerText = `${e.cal} kcal · P ${e.pro} · C ${e.carb} · F ${e.fat}`; }
+        function addFood() {
+            const e = pickCalc(); if (!e.g) return;
+            const log = todayLog(); log.push(e); setProfileData('foodlog_' + dkey(), log);
+            selFood = null; document.getElementById('food-pick').innerHTML = ''; document.getElementById('food-q').value = '';
+            updateNutritionUI();
+        }
+        function delFood(i) { const log = todayLog(); log.splice(i, 1); setProfileData('foodlog_' + dkey(), log); updateNutritionUI(); }
+        function logNutrition() {
+            const v = id => parseFloat(document.getElementById(id).value) || 0;
+            const e = { n: 'Manual entry', g: 0, cal: v('input-cal'), pro: v('input-pro'), carb: v('input-carb'), fat: v('input-fat') };
+            if (!(e.cal || e.pro || e.carb || e.fat)) return;
+            const log = todayLog(); log.push(e); setProfileData('foodlog_' + dkey(), log);
+            ['input-cal', 'input-pro', 'input-carb', 'input-fat'].forEach(id => { document.getElementById(id).value = ''; });
+            updateNutritionUI();
+        }
+        function updateNutritionUI() {
+            const log = todayLog(), tg = calculateTargets();
+            const t = log.reduce((a, e) => ({ cal: a.cal + e.cal, pro: a.pro + e.pro, carb: a.carb + e.carb, fat: a.fat + e.fat }), { cal: 0, pro: 0, carb: 0, fat: 0 });
+            const bar = (txt, b, v, g, u) => { const pct = g ? Math.round(v / g * 100) : 0; document.getElementById(txt).innerText = `${Math.round(v)} / ${g}${u}`; const el = document.getElementById(b); el.style.width = Math.min(100, pct) + '%'; el.style.background = pct > 105 ? '#ef4444' : ''; };
+            bar('cal-progress-text', 'cal-progress-bar', t.cal, tg.cal, ' kcal'); bar('protein-text', 'protein-bar', t.pro, tg.pro, 'g');
+            bar('carbs-text', 'carbs-bar', t.carb, tg.carb, 'g'); bar('fat-text', 'fat-bar', t.fat, tg.fat, 'g');
+            document.getElementById('food-remaining').innerText = `Left today: ${Math.max(0, Math.round(tg.cal - t.cal))} kcal · P ${Math.max(0, Math.round(tg.pro - t.pro))} · C ${Math.max(0, Math.round(tg.carb - t.carb))} · F ${Math.max(0, Math.round(tg.fat - t.fat))}`;
+            document.getElementById('food-log').innerHTML = log.map((e, i) => `<div class="flex justify-between items-center text-[11px] bg-neutral-950 border border-custom rounded px-2 py-1"><span class="text-gray-300 truncate pr-2">${esc(e.n)}${e.g ? ' ' + e.g + 'g' : ''}</span><span class="font-mono text-gray-500 whitespace-nowrap">${Math.round(e.cal)} kcal <button onclick="delFood(${i})" class="text-red-400 ml-1"><i class="fa-solid fa-xmark"></i></button></span></div>`).join('');
+            updateWaterUI();
+        }
+        function updateWaterUI() {
+            const ml = getProfileData('water_' + dkey(), 0), target = calculateTargets().water;
+            document.getElementById('water-progress-text').innerText = `${ml} / ${target} ml`;
+            document.getElementById('water-progress-bar').style.width = Math.min(100, Math.round(ml / target * 100)) + '%';
+        }
+        function addWater(a) { setProfileData('water_' + dkey(), getProfileData('water_' + dkey(), 0) + a); updateWaterUI(); }
+        function resetWater() { setProfileData('water_' + dkey(), 0); updateWaterUI(); }
+
+        // ---- Targets (Mifflin-St Jeor + activity + goal, with safety floors) ----
+        function computeTargets(st, c) {
+            const bmr = 10 * st.weight + 6.25 * st.height - 5 * st.age + (st.gender === 'male' ? 5 : -161);
+            const af = { 'Mostly sitting': 1.2, 'Lightly active': 1.375, 'On my feet a lot': 1.55, 'Very physical job': 1.725 }[c.act] || 1.45;
+            const tdee = bmr * af, gw = st.goalweight || st.weight, bmi = st.weight / ((st.height / 100) ** 2), g = c.goal || '';
+            let cal;
+            if (!g) cal = tdee + (gw < st.weight ? -250 : gw > st.weight ? 250 : 0);
+            else {
+                const adj = /Lose/.test(g) ? (bmi < 18.5 || gw >= st.weight ? 1 : 0.82) : /muscle/i.test(g) ? 1.08 : /Recomp/.test(g) ? 0.95 : /stronger/i.test(g) ? 1.04 : 1;
+                cal = tdee * adj;
+            }
+            cal = Math.round(Math.max(cal, st.gender === 'male' ? 1500 : 1200));
+            const pro = Math.round(gw * (/Lose/.test(g) ? 2.2 : 2.0)), fat = Math.round(Math.max(gw * 0.8, cal * 0.2 / 9));
+            return { cal, pro, fat, carb: Math.max(50, Math.round((cal - pro * 4 - fat * 9) / 4)), water: Math.max(1500, Math.round(35 * st.weight / 250) * 250), bmr, tdee };
+        }
+        function calculateTargets() { return computeTargets(getProfileData('user_stats', { height: 157, weight: 56, goalweight: 54, age: 22, gender: 'female' }), getProfileData('intake', {})); }
+
+        // ---- Exercise library: name|group|equipment(g gym,d dumbbell,h bodyweight)|level|c compound/i isolation|cue ----
+        const LIB = `Seated Machine Chest Press|ch|g|1|c|Back flat on the pad, smooth press.
+Dumbbell Bench Press|ch|gd|1|c|Shoulder blades pinched, elbows about 45 degrees.
+Incline Dumbbell Press|ch|gd|2|c|Bench at 30-45 degrees, feel the upper chest stretch.
+Push-ups|ch|ghd|1|c|Straight body line, chest to just above the floor.
+Pec Deck Chest Flyes|ch|g|1|i|Hug in an arc, soft elbows.
+Dumbbell Flyes|ch|gd|2|i|Wide arc, stop at a comfortable stretch.
+Lat Pulldown (Neutral Grip)|ba|g|1|c|Pull elbows down, chest up.
+Seated Cable Row|ba|g|1|c|Squeeze shoulder blades, no swinging.
+Chest-Supported Row Machine|ba|g|1|c|Chest glued to the pad.
+One-Arm Dumbbell Row|ba|gd|1|c|Flat back, pull to the hip.
+Straight-Arm Cable Pulldown|ba|g|2|i|Arms straight, feel the lats.
+Prone Back Extension|ba|h|1|i|Lift smoothly, squeeze glutes, no over-arching.
+Seated Dumbbell Shoulder Press|sh|gd|1|c|Ribs down, press straight overhead.
+Dumbbell Lateral Raises|sh|gd|1|i|Lead with elbows, stop at shoulder height.
+Cable Lateral Raises|sh|g|2|i|Control the lowering.
+Cable Face Pulls|sh|g|1|i|Elbows high and wide.
+Reverse Pec Deck (Rear Delts)|sh|g|1|i|Sweep back, no shrugging.
+Dumbbell Hammer Curls|bi|gd|1|i|Elbows pinned, neutral grip.
+Incline Dumbbell Biceps Curls|bi|gd|2|i|Let arms hang for a full stretch.
+Cable Curls|bi|g|1|i|Keep upper arms still.
+Triceps Rope Pushdowns|tr|g|1|i|Elbows at your sides, spread the rope at the bottom.
+Overhead Cable Extension|tr|g|2|i|Elbows by your ears.
+Bench Dips|tr|h|1|i|Shoulders down, elbows back not flared.
+Leg Press Machine|qu|g|1|c|Hips on the pad, knees about 90 degrees.
+Dumbbell Goblet Squats|qu|gd|1|c|Chest up, knees over toes.
+Bodyweight Squats|qu|h|1|c|Sit back and down, drive through mid-foot.
+Dumbbell Reverse Lunges|qu|gdh|2|c|Long step back, front knee tracks the toes.
+Leg Extension Machine|qu|g|1|i|Squeeze at the top, no swinging.
+Seated Leg Curls|ha|g|1|i|Hips down, curl smoothly.
+Lying Leg Curls|ha|g|1|i|Hips pressed into the bench.
+Glute Hyper-Extension (Roman Chair)|ha|g|1|c|Hinge with a flat back, squeeze glutes.
+Standing Calf Raises|ca|gdh|1|i|Full stretch, pause at the top.
+Cable Pallof Press|co|g|1|i|Resist rotation, hold 2 s.
+Plank (hold)|co|gdh|1|i|Straight line, ribs down, squeeze glutes.`.split('\n').map(l => { const a = l.split('|'); return { n: a[0], g: a[1], q: a[2], l: +a[3], t: a[4], c: a[5] }; });
+        const SLOTS = {
+            PUSH: ['ch:c', 'sh:c', 'ch:i', 'sh:i', 'tr:i', 'tr:i', 'co:i'], PULL: ['ba:c', 'ba:c', 'sh:i', 'ba:i', 'bi:i', 'bi:i', 'co:i'], LEGS: ['qu:c', 'ha:i', 'qu:c', 'ha:c', 'ca:i', 'co:i', 'qu:i'],
+            UPPER: ['ch:c', 'ba:c', 'sh:c', 'ba:i', 'bi:i', 'tr:i', 'ch:i'], LOWER: ['qu:c', 'ha:c', 'qu:i', 'ha:i', 'ca:i', 'co:i', 'qu:c'], FULL: ['qu:c', 'ch:c', 'ba:c', 'ha:i', 'sh:i', 'co:i', 'bi:i']
+        };
+        const INJ = { knee: /squat|leg press|leg ext|lunge/, shoulder: /shoulder press|incline|lateral|push-up|dip/, back: /hyper|row|squat|back ext/, wrist: /curl|push-up|plank/, elbow: /pushdown|extension|curl|dip/, hip: /lunge|leg press|squat/ };
+        const RIR = ['Base week: leave about 3 reps in reserve.', 'Build week: leave about 2 reps in reserve.', 'Push week: leave about 1 rep in reserve.', 'Deload week: use about 90% of your weights, stop 3-4 reps short, and skip the last set.'];
+
+        function layoutFor(d, pref) {
+            if (/Full/.test(pref)) return Array(d).fill('FULL');
+            if (/Upper/.test(pref)) return Array.from({ length: d }, (_, i) => i % 2 ? 'LOWER' : 'UPPER');
+            if (/Push/.test(pref)) return Array.from({ length: d }, (_, i) => ['PUSH', 'PULL', 'LEGS'][i % 3]);
+            return { 2: ['FULL', 'FULL'], 3: ['FULL', 'FULL', 'FULL'], 4: ['UPPER', 'LOWER', 'UPPER', 'LOWER'], 5: ['PUSH', 'PULL', 'LEGS', 'UPPER', 'LOWER'], 6: ['PUSH', 'PULL', 'LEGS', 'PUSH', 'PULL', 'LEGS'] }[d] || ['FULL', 'FULL', 'FULL'];
+        }
+        function generatePlan(c) {
+            const lv = { beginner: 1, intermediate: 2, advanced: 3 }[c.exp] || 1, eq = c.equip === 'Full gym' ? 'g' : /Dumbbell/.test(c.equip) ? 'd' : 'h';
+            const bad = Object.entries(INJ).filter(([k]) => (c.inj || '').toLowerCase().includes(k)).map(e => e[1]);
+            const n = { 30: 4, 45: 5, 60: 6, 75: 7 }[c.mins] || 5, gl = c.goal || '', st = /stronger/i.test(gl), mu = /muscle|Recomp/i.test(gl);
+            const extra = { 'Upper body': 'ch:i', 'Lower body / glutes': 'ha:c', 'Arms & shoulders': 'bi:i', 'Abs / core': 'co:i' }[c.focus];
+            const cnt = {}, names = [], lists = {};
+            layoutFor(+c.days || 3, c.split || '').forEach(ty => {
+                const v = cnt[ty] = (cnt[ty] || 0) + 1, nm = `${{ FULL: 'Full Body', UPPER: 'Upper', LOWER: 'Lower', PUSH: 'Push', PULL: 'Pull', LEGS: 'Legs' }[ty]} ${'ABCDEF'[v - 1]}`;
+                const slots = SLOTS[ty].slice(0, n - (extra ? 1 : 0)); if (extra) slots.push(extra);
+                const used = new Set(), list = [], dayG = new Set(SLOTS[ty].map(x => x.split(':')[0]));
+                slots.forEach(s => {
+                    const [g, t] = s.split(':'), pool = LIB.filter(e => e.g === g && e.q.includes(eq) && e.l <= lv && !used.has(e.n) && !bad.some(r => r.test(e.n.toLowerCase())));
+                    const pt = pool.filter(e => e.t === t); let cand = pt.length ? pt : pool;
+                    if (!cand.length) cand = LIB.filter(e => dayG.has(e.g) && e.q.includes(eq) && e.l <= lv && !used.has(e.n) && !bad.some(r => r.test(e.n.toLowerCase())));
+                    if (!cand.length) return;
+                    const e = cand[(v - 1) % cand.length]; used.add(e.n);
+                    const comp = e.t === 'c', plank = /plank/i.test(e.n);
+                    list.push({ name: e.n, sets: String(lv === 1 ? (comp ? 3 : 2) : lv === 2 ? 3 : (comp ? 4 : 3)), reps: plank ? '30-45 s' : comp ? (st ? '4-6' : mu ? '6-10' : '8-12') : (st ? '8-10' : mu ? '10-15' : '12-15'), cues: e.c, grp: e.g });
+                });
+                names.push(nm); lists[nm] = list;
+            });
+            return { names, lists };
+        }
+        function makeSched(c, names) {
+            const d = names.length, pat = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 4, 5], 6: [0, 1, 2, 3, 4, 5] }[d] || [0, 2, 4];
+            let wd = (c.wd || []).slice().sort((a, b) => a - b); if (wd.length < d) wd = pat; wd = wd.slice(0, d);
+            const s = Array(7).fill('Rest'); wd.forEach((w, i) => { s[w] = names[i]; }); return s;
+        }
+        function coachNotes(c, st, t) {
+            const n = [], bmi = st.weight / ((st.height / 100) ** 2), diff = st.weight - (st.goalweight || st.weight), g = c.goal || '';
+            if (/Lose/.test(g) && bmi < 18.5) n.push('Your BMI is already in the underweight range, so I set calories to maintenance instead of a deficit. Please talk to a doctor or dietitian before trying to lose more.');
+            else if (/Lose/.test(g) && diff > 0) { const rate = st.weight * 0.0065, wk = Math.ceil(diff / rate); n.push(`Fat loss: aim for about ${rate.toFixed(2)} kg/week (a moderate deficit of roughly 18%). ${diff.toFixed(1)} kg to go is about ${wk} weeks${+c.weeks && +c.weeks < wk ? `. ${c.weeks} weeks is aggressive; plan for ${wk} and treat faster as a bonus` : ''}. If the scale average is flat for 2 weeks, cut 100-150 kcal or add 2,000 steps/day.`); }
+            if (/muscle/i.test(g)) n.push('Muscle gain: a small surplus. Expect at most about 0.25-0.5 kg/week; if you gain faster, trim 100-150 kcal.');
+            if (/Recomp/.test(g)) n.push('Recomp is slow but works: eat near maintenance, keep protein high and judge progress by strength, measurements and photos, not the scale alone.');
+            n.push(`Training: ${c.days} days/week, ${c.mins} min, ${RIR[0].toLowerCase()} Double progression: when you hit the top of the rep range on every set, add weight (2.5 kg upper body, 5 kg lower) and drop back to the bottom of the range. Every 4th week is a deload. The app shows your target for each lift.`);
+            n.push(`Protein ${t.pro} g/day is about ${Math.round(t.pro / (+c.meals || 3))} g per meal over ${c.meals || 3} meals. Keep fat at or above ${t.fat} g and fill the rest with carbs around training.`);
+            if (/Vegan|Vegetarian/.test(c.diet)) n.push('Plant-based: lean on tofu, tempeh, lentils, beans, soy yogurt and a protein powder to reach protein.');
+            if (c.alg) n.push(`Foods you avoid: ${esc(c.alg)}. Double-check labels when you search foods.`);
+            if (+c.sleep && +c.sleep < 7) n.push(`You sleep about ${c.sleep} h. Aim for 7-9 h; short sleep raises hunger and slows recovery, so treat it as part of the program.`);
+            if (c.inj) n.push(`You mentioned: ${esc(c.inj)}. I left out movements that commonly aggravate that area. Pain is not a signal to push through; get it checked by a physio or doctor.`);
+            const hard = { 'Staying consistent': 'Consistency: your schedule is fixed to set days. On bad days do just 10 minutes; showing up keeps the streak.', 'Eating right': 'Eating: start small. Hit protein at every meal and water first; log only your biggest meal if full tracking is too much.', 'Not enough time': 'Time: 30-45 minute sessions work. Keep rests honest and skip phone time between sets.', 'Motivation': 'Motivation: track your lifts and keep the streak calendar. Numbers going up are proof the plan works.', 'Not knowing what to do': 'Clarity: follow the plan exactly for 4 weeks before changing anything.' }[c.hard]; if (hard) n.push(hard);
+            if (c.track && /Stressful/.test(c.track)) n.push('Since counting calories feels stressful, treat calories as a rough guide. Protein and water are the numbers that matter most.');
+            if (c.body && c.body.trim().length > 2) n.push('Thank you for being honest about how you feel about your body. Your plan is built around what your body can do: strength, energy and consistency. Take photos and measurements every 4 weeks instead of weighing daily, and mute accounts that make you compare. If worries about food or your body start running your day, a counselor or doctor can help.');
+            if (+st.age && +st.age < 18) n.push('Under 18: keep it about form, strength and sleep, avoid aggressive dieting, and check with a doctor first.');
+            return n;
+        }
+
+        // ---- Intake wizard ----
+        let ci = {}, ciStep = 0;
+        const STEPS = [
+            { t: 'About you', q: 'Hi, I am your coach. First the basics, so I can set realistic numbers.', f: [['age', 'Age', 'num'], ['gender', 'Gender', 'sel', ['female', 'male']], ['height', 'Height (cm)', 'num'], ['weight', 'Current weight (kg)', 'num'], ['goalweight', 'Goal weight (kg)', 'num'], ['bf', 'Body fat % (optional, a guess is fine)', 'num']] },
+            { t: 'Your goal', q: 'What are we working toward? The clearer the goal, the better the plan.', f: [['goal', 'Main goal', 'sel', ['Lose fat', 'Build muscle', 'Recomp (lose fat and build muscle)', 'Get stronger', 'General health']], ['focus', 'Area you most want to improve', 'sel', ['Balanced', 'Upper body', 'Lower body / glutes', 'Arms & shoulders', 'Abs / core']], ['weeks', 'Timeframe in weeks (optional)', 'num'], ['why', 'Why now? What would reaching it change for you?', 'text']] },
+            { t: 'Training', q: 'Let us fit training around your life, not the other way around.', f: [['exp', 'Experience', 'sel', ['beginner', 'intermediate', 'advanced']], ['days', 'Days per week', 'sel', ['2', '3', '4', '5', '6']], ['wd', 'Days you are available', 'days'], ['mins', 'Minutes per session', 'sel', ['30', '45', '60', '75']], ['equip', 'Where do you train?', 'sel', ['Full gym', 'Dumbbells + bench at home', 'Bodyweight only']], ['split', 'Preferred split', 'sel', ['Let coach decide', 'Full body', 'Upper / Lower', 'Push / Pull / Legs']], ['inj', 'Injuries or pain (knee, shoulder, back...)', 'text']] },
+            { t: 'Lifestyle & mindset', q: 'Food, sleep and mindset decide results as much as training. This stays on your device.', f: [['act', 'Daily activity outside the gym', 'sel', ['Mostly sitting', 'Lightly active', 'On my feet a lot', 'Very physical job']], ['sleep', 'Average sleep (hours)', 'num'], ['diet', 'Eating style', 'sel', ['No restrictions', 'Vegetarian', 'Vegan', 'Pescatarian', 'Halal / kosher']], ['alg', 'Allergies or foods you avoid', 'text'], ['meals', 'Meals per day', 'sel', ['2', '3', '4', '5']], ['hard', 'Biggest struggle', 'sel', ['Staying consistent', 'Eating right', 'Not enough time', 'Motivation', 'Not knowing what to do']], ['body', 'How do you feel about your body? Anything that makes you insecure? (optional)', 'text'], ['track', 'How do you feel about counting calories?', 'sel', ['Fine with it', 'Stressful, keep it simple']]] }
+        ];
+        function openCoach(step = 0) {
+            ci = Object.assign({}, getProfileData('user_stats', {}), getProfileData('intake', {})); ciStep = step;
+            document.getElementById('coachModal').classList.remove('hidden'); renderCoach();
+        }
+        function paintWd() { WD.forEach((_, i) => { const b = document.getElementById('wd-' + i); if (b) b.className = 'flex-1 py-2 rounded text-[11px] font-bold ' + ((ci.wd || []).includes(i) ? 'bg-white text-black' : 'bg-neutral-900 text-gray-300 border border-custom'); }); }
+        function toggleWd(i) { const a = ci.wd || []; ci.wd = a.includes(i) ? a.filter(x => x !== i) : a.concat(i); paintWd(); }
+        function renderCoach() {
+            const s = STEPS[ciStep];
+            const fld = ([k, l, t, o]) => {
+                const v = ci[k] ?? '';
+                const inp = t === 'sel' ? `<select id="ci-${k}" class="${CI_INP}"><option value="">Choose...</option>${o.map(x => `<option ${String(x) === String(v) ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>`
+                    : t === 'days' ? `<div class="flex gap-1">${WD.map((d, i) => `<button type="button" onclick="toggleWd(${i})" id="wd-${i}">${d}</button>`).join('')}</div>`
+                    : `<input id="ci-${k}" type="${t === 'num' ? 'number' : 'text'}" step="any" value="${esc(v)}" class="${CI_INP}">`;
+                return `<div class="space-y-1"><label class="text-[11px] text-gray-400 block">${l}</label>${inp}</div>`;
+            };
+            document.getElementById('coach-body').innerHTML = `<div class="text-[10px] font-mono text-gray-500">STEP ${ciStep + 1} / ${STEPS.length}</div><h3 class="text-sm font-bold text-white">${s.t}</h3><p class="text-[11px] text-gray-500">${s.q}</p>${s.f.map(fld).join('')}<div id="coach-err" class="text-[11px] text-red-400"></div><div class="flex gap-2 pt-1">${ciStep ? '<button onclick="coachNav(-1)" class="flex-1 py-2 bg-neutral-900 border border-custom rounded-lg text-xs text-gray-300">Back</button>' : '<button onclick="closeCoach()" class="flex-1 py-2 bg-neutral-900 border border-custom rounded-lg text-xs text-gray-300">Skip for now</button>'}<button onclick="coachNav(1)" class="flex-1 py-2 bg-white text-black font-bold rounded-lg text-xs">${ciStep === STEPS.length - 1 ? 'Build my plan' : 'Next'}</button></div>`;
+            paintWd();
+        }
+        function coachNav(d) {
+            STEPS[ciStep].f.forEach(([k, , t]) => { if (t === 'days') return; const el = document.getElementById('ci-' + k); if (el) ci[k] = t === 'num' ? (el.value === '' ? '' : parseFloat(el.value)) : el.value; });
+            if (d < 0) { ciStep--; renderCoach(); return; }
+            const need = [['age', 'age', 0], ['gender', 'gender', 0], ['height', 'height', 0], ['weight', 'current weight', 0], ['goal', 'main goal', 1], ['exp', 'experience', 2], ['days', 'days per week', 2], ['equip', 'where you train', 2]];
+            const miss = need.find(x => x[2] === ciStep && !ci[x[0]]);
+            if (miss) { document.getElementById('coach-err').innerText = `Please fill in: ${miss[1]}.`; return; }
+            if (ciStep === 0 && (ci.age < 12 || ci.age > 90 || ci.height < 100 || ci.height > 230 || ci.weight < 30 || ci.weight > 300)) { document.getElementById('coach-err').innerText = 'Please check age, height (cm) and weight (kg).'; return; }
+            if (ciStep < STEPS.length - 1) { ciStep++; renderCoach(); } else finishCoach();
+        }
+        function rebuildPlan(keepStart) {
+            const g = generatePlan(ci), old = getProfileData('plan', null);
+            Object.entries(g.lists).forEach(([n, l]) => setProfileData('workout_' + n, l));
+            setProfileData('plan', { names: g.names, start: keepStart && old ? old.start : dkey() });
+            setProfileData('sched', makeSched(ci, g.names));
+        }
+        function finishCoach() {
+            setProfileData('user_stats', { height: +ci.height, weight: +ci.weight, goalweight: +ci.goalweight || +ci.weight, age: +ci.age, gender: ci.gender });
+            setProfileData('intake', ci); setProfileData('difficulty', ci.exp);
+            rebuildPlan(false); loadUserStatsForm(); showPlan();
+        }
+        function showPlan() {
+            const st = getProfileData('user_stats', {}), t = computeTargets(st, ci), sc = getProfileData('sched', []);
+            document.getElementById('coach-body').innerHTML = `<h3 class="text-sm font-bold text-white">Your coach plan</h3>
+                <div class="grid grid-cols-4 gap-1 text-center">${[['kcal', t.cal], ['Protein', t.pro + 'g'], ['Carbs', t.carb + 'g'], ['Fat', t.fat + 'g']].map(x => `<div class="bg-neutral-950 border border-custom rounded p-2"><div class="text-white text-sm font-bold">${x[1]}</div><div class="text-[10px] text-gray-500">${x[0]}</div></div>`).join('')}</div>
+                <div class="text-[11px] text-gray-400">Water ${t.water} ml/day · maintenance about ${Math.round(t.tdee)} kcal</div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[9px]">${WD.map((d, i) => `<div class="bg-neutral-950 border border-custom rounded p-1"><div class="text-gray-500">${d}</div><div class="text-white leading-tight">${esc(sc[i] || 'Rest')}</div></div>`).join('')}</div>
+                <div class="space-y-1.5">${coachNotes(ci, st, t).map(x => `<p class="text-[11px] text-gray-300 leading-relaxed">• ${x}</p>`).join('')}</div>
+                <div class="text-[11px] text-gray-500"><b class="text-gray-300">Weekly check-in questions:</b> How were your energy and sleep? Which lift felt strongest? Any pain? Did you hit protein most days? What got in the way?</div>
+                <button onclick="closeCoach()" class="w-full bg-white text-black font-bold text-xs py-2 rounded-lg">Start training</button>`;
+        }
+        function showCoachNotes() { ci = getProfileData('intake', {}); document.getElementById('coachModal').classList.remove('hidden'); showPlan(); }
+        function closeCoach() { document.getElementById('coachModal').classList.add('hidden'); initPlan(); updateNutritionUI(); }
+        function renderCoachCard() {
+            const el = document.getElementById('coach-card'); if (!el) return;
+            const c = getProfileData('intake', null);
+            if (!c) { el.innerHTML = '<p class="text-[11px] text-gray-500">No coach plan yet. Tap Coach intake to build one.</p>'; return; }
+            const t = calculateTargets();
+            el.innerHTML = `<div class="bg-neutral-950 border border-custom rounded-lg p-3 text-[11px] text-gray-400 space-y-1"><div class="text-white font-bold">${esc(c.goal)} · ${c.days} days/wk · ${c.mins} min · ${esc(c.exp)}</div><div>${t.cal} kcal · P${t.pro} C${t.carb} F${t.fat} · water ${t.water} ml</div><button onclick="showCoachNotes()" class="underline text-gray-300">View coach notes</button></div>`;
+        }
+        function createNewProfile() {
+            const input = document.getElementById('new-user-name'), name = input.value.trim();
+            if (name && !profiles.includes(name)) {
+                profiles.push(name); localStorage.setItem('jm_profiles', JSON.stringify(profiles));
+                activeProfile = name; localStorage.setItem('jm_active_profile', activeProfile);
+                input.value = ''; closeUserModal(); initApp(); openCoach(0);
+            }
+        }
+        function changeDifficulty(level) {
+            setProfileData('difficulty', level);
+            const c = getProfileData('intake', null);
+            if (c) { ci = Object.assign(c, { exp: level }); setProfileData('intake', ci); rebuildPlan(true); initPlan(); } else renderWorkout();
+        }
+
+        // ---- Plan UI, daily reset, progressive overload ----
+        function planPhase() { const p = getProfileData('plan', null); return p ? Math.max(0, Math.floor((new Date(dkey() + 'T12:00') - new Date(p.start + 'T12:00')) / 6048e5)) : 0; }
+        function renderDayButtons() {
+            const plan = getProfileData('plan', null), names = plan ? plan.names : ['Push A', 'Pull A', 'Legs A', 'Push B', 'Pull B', 'Legs B'], wk = planPhase();
+            document.getElementById('day-grid').innerHTML = names.map(n => `<button onclick="selectDay('${esc(n)}')" class="day-btn ${n === currentDay ? 'bg-white text-black' : 'bg-neutral-900 text-gray-300 border border-custom'} py-2 rounded-lg text-xs font-bold transition" data-day="${esc(n)}">${esc(n)}</button>`).join('');
+            document.getElementById('plan-banner').innerText = plan ? `Week ${wk + 1} of your plan. ${RIR[wk % 4]}` : '';
+        }
+        function initPlan() {
+            const plan = getProfileData('plan', null);
+            if (plan) { const t = (getProfileData('sched', []))[wdx(new Date())]; currentDay = (t && t !== 'Rest' && plan.names.includes(t)) ? t : plan.names[0]; } else currentDay = 'Push A';
+            renderDayButtons(); renderCoachCard(); renderCalendar(); selectDay(currentDay);
+        }
+        function rolloverDay() {
+            const t = dkey(), pre = `jm_${activeProfile}_`;
+            if (getProfileData('rolled', '') === t) return;
+            Object.keys(localStorage).forEach(k => { if (k.startsWith(pre) && /_ex_\d+_(w|r|prev_w|prev_r|done)$/.test(k)) localStorage.removeItem(k); });
+            setProfileData('rolled', t);
+        }
+        function targetHTML(ex) {
+            const h = getProfileData('hist_' + ex.name, []), l = h[h.length - 1], nums = String(ex.reps).match(/\d+/g) || ['10'], lo = +nums[0], hi = +(nums[1] || nums[0]);
+            const inc = /leg|squat|calf|hyper|lunge/i.test(ex.name) ? 5 : 2.5, deload = planPhase() % 4 === 3, unit = /\ss/.test(ex.reps) ? '' : ' reps';
+            let txt;
+            if (!l) txt = `First time: pick a weight you can lift for ${hi} clean reps with 2-3 in reserve.`;
+            else if (deload && l.w) txt = `Last ${l.w} kg x ${l.r}. Deload: ${Math.round(l.w * 0.9 * 2) / 2} kg x ${lo}-${hi}, stop 3-4 reps short.`;
+            else if (l.r >= hi) txt = `Last ${l.w ? l.w + ' kg x ' : ''}${l.r}. Target: ${l.w ? (l.w + inc) + ' kg x ' + lo : 'add a set or slow the tempo'}.`;
+            else txt = `Last ${l.w ? l.w + ' kg x ' : ''}${l.r}. Target: ${l.w ? l.w + ' kg x ' : ''}${l.r + 1}${unit}.`;
+            return `<p class="text-[11px] text-blue-300 font-mono"><i class="fa-solid fa-arrow-trend-up mr-1"></i>${txt}</p>`;
+        }
+        function toggleDone(idx) {
+            const k = `${currentDay}_ex_${idx}_done`, on = !getProfileData(k, false), list = getActiveWorkoutList(), ex = list[idx];
+            setProfileData(k, on);
+            if (ex) {
+                const h = getProfileData('hist_' + ex.name, []), td = dkey();
+                if (h.length && h[h.length - 1].d === td) h.pop();
+                const w = parseFloat(getProfileData(`${currentDay}_ex_${idx}_w`, '')), r = parseInt(getProfileData(`${currentDay}_ex_${idx}_r`, ''));
+                if (on && r) h.push({ d: td, w: isNaN(w) ? 0 : w, r });
+                setProfileData('hist_' + ex.name, h.slice(-20));
+            }
+            if (on && list.length && list.every((_, i) => getProfileData(`${currentDay}_ex_${i}_done`, false))) { const c = getProfileData('cal', {}); c[dkey()] = 'w'; setProfileData('cal', c); }
+            renderWorkout(); renderCalendar();
+        }
+
+        // ---- Calendar & streaks ----
+        let calM = new Date(), calSel = null;
+        function streaks(cal, sched) {
+            const keys = Object.keys(cal).sort(); if (!keys.length) return { cur: 0, best: 0 };
+            const ok = d => { const v = cal[dkey(d)]; return v === 'w' || v === 'r' || (!v && sched[wdx(d)] === 'Rest'); };
+            const now = new Date(); now.setHours(12, 0, 0, 0);
+            let d = new Date(keys[0] + 'T12:00'), run = 0, best = 0;
+            while (d <= now) { const isToday = dkey(d) === dkey(now); if (ok(d)) run++; else if (!isToday) run = 0; best = Math.max(best, run); d = new Date(d.getTime() + 864e5); }
+            return { cur: run, best };
+        }
+        function markDay(k, v) { const c = getProfileData('cal', {}); if (v) c[k] = v; else delete c[k]; setProfileData('cal', c); renderCalendar(); }
+        function calPick(k) { calSel = k; renderCalendar(); }
+        function calMonth(d) { calM = new Date(calM.getFullYear(), calM.getMonth() + d, 1); renderCalendar(); }
+        function setSched(i, v) { const s = getProfileData('sched', Array(7).fill('Rest')); s[i] = v; setProfileData('sched', s); renderCalendar(); }
+        function renderCalendar() {
+            const el = document.getElementById('cal-body'); if (!el) return;
+            const cal = getProfileData('cal', {}), sched = getProfileData('sched', Array(7).fill('Rest')), plan = getProfileData('plan', null), t = dkey();
+            const y = calM.getFullYear(), m = calM.getMonth(), dim = new Date(y, m + 1, 0).getDate(), st = streaks(cal, sched);
+            let cells = ''; for (let i = 0; i < wdx(new Date(y, m, 1)); i++) cells += '<div></div>';
+            let doneN = 0;
+            for (let d = 1; d <= dim; d++) {
+                const dt = new Date(y, m, d), k = dkey(dt), sc = sched[wdx(dt)], v = cal[k]; if (v === 'w') doneN++;
+                const mark = v === 'w' ? '<i class="fa-solid fa-check text-green-400 text-[10px]"></i>' : v === 'r' ? '<i class="fa-solid fa-bed text-blue-400 text-[10px]"></i>' : (sc !== 'Rest' ? '<span class="w-1.5 h-1.5 rounded-full bg-gray-500 inline-block"></span>' : '');
+                cells += `<button onclick="calPick('${k}')" class="aspect-square rounded-lg border text-[11px] flex flex-col items-center justify-center ${k === t ? 'border-white' : 'border-custom'} ${k === calSel ? 'bg-neutral-700' : 'bg-neutral-950'}"><span class="text-gray-300">${d}</span>${mark}</button>`;
+            }
+            let sel = '';
+            if (calSel) {
+                const dt = new Date(calSel + 'T12:00'), sc = sched[wdx(dt)], past = calSel <= t;
+                sel = `<div class="bg-neutral-950 border border-custom rounded-lg p-3 space-y-2"><div class="text-xs text-white">${dt.toDateString()} · ${esc(sc)}</div>${past ? `<div class="grid grid-cols-3 gap-2"><button onclick="markDay('${calSel}','w')" class="py-1.5 rounded bg-green-600 text-white text-[11px] font-bold">Workout done</button><button onclick="markDay('${calSel}','r')" class="py-1.5 rounded bg-blue-600 text-white text-[11px] font-bold">Rest day done</button><button onclick="markDay('${calSel}','')" class="py-1.5 rounded bg-neutral-800 text-gray-300 text-[11px]">Clear</button></div>` : '<div class="text-[11px] text-gray-500">Upcoming. You can mark it once the day arrives.</div>'}</div>`;
+            }
+            const opts = ['Rest'].concat(plan ? plan.names : []);
+            el.innerHTML = `<div class="grid grid-cols-3 gap-2 text-center">${[['Current streak', st.cur + ' d'], ['Best streak', st.best + ' d'], ['This month', doneN + ' workouts']].map(x => `<div class="bg-card border border-custom rounded-xl p-3"><div class="text-white text-lg font-bold">${x[1]}</div><div class="text-[10px] text-gray-500">${x[0]}</div></div>`).join('')}</div>
+                <div class="bg-card border border-custom rounded-xl p-4 space-y-3"><div class="flex justify-between items-center"><button onclick="calMonth(-1)" class="px-3 text-gray-400"><i class="fa-solid fa-chevron-left"></i></button><span class="text-xs font-bold text-white uppercase tracking-wider">${calM.toLocaleString('default', { month: 'long' })} ${y}</span><button onclick="calMonth(1)" class="px-3 text-gray-400"><i class="fa-solid fa-chevron-right"></i></button></div>
+                <div class="grid grid-cols-7 gap-1 text-center text-[10px] text-gray-500">${WD.map(d => `<div>${d}</div>`).join('')}</div><div class="grid grid-cols-7 gap-1">${cells}</div>
+                <div class="text-[10px] text-gray-500 flex gap-3"><span><i class="fa-solid fa-check text-green-400"></i> workout done</span><span><i class="fa-solid fa-bed text-blue-400"></i> rest day done</span><span>● scheduled</span></div>${sel}</div>
+                <div class="bg-card border border-custom rounded-xl p-4 space-y-2"><h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Weekly schedule</h3>${WD.map((d, i) => `<div class="flex items-center gap-2"><span class="w-10 text-xs text-gray-400">${d}</span><select onchange="setSched(${i},this.value)" class="flex-1 bg-neutral-950 border border-custom rounded p-1.5 text-xs text-white">${opts.map(o => `<option ${o === sched[i] ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>`).join('')}<p class="text-[10px] text-gray-500">Rest days you do not mark still keep your streak alive. Missing a scheduled workout resets it. Finishing every exercise in a workout marks the day automatically.</p></div>`;
+        }
+        // ======== END COACH ========
 
         initApp();
     </script>
